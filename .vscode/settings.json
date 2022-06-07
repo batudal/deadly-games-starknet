@@ -1,5 +1,9 @@
 {
   "files.exclude": {
     "**/.git": false
-  }
+  },
+  "cairo.cairoFormatPath": "cairo-format",
+  "cairols.nileUseVenv": false,
+  "cairols.useVenv": false,
+  "cairols.sourceDir": "src"
 }

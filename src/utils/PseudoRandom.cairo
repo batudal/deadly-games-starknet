@@ -23,7 +23,6 @@ func get_pseudorandom{
     }() -> (
         num_to_use : felt
     ):
-    only_approved()
     # Seed is fed to linear congruential generator.
     # seed = (multiplier * seed + increment) % modulus.
     # Params from GCC. (https://en.wikipedia.org/wiki/Linear_congruential_generator).
