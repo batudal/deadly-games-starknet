@@ -14,3 +14,8 @@ karma = [
 greed = [
     "./src/Greed.cairo",
 ]
+
+[profile.ci.protostar.shared_command_configs]
+no_color=true
+cairo_path = ["./lib/cairo_contracts/src"]
+target = "contracts"

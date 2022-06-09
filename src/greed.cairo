@@ -52,13 +52,16 @@ end
 
 @external
 func greedyBastard{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    amount : Uint256
+    ticket_amount : Uint256
 ):
     let (pseudo) = pseudo_address.read()
     let (sender) = get_caller_address()
     let (recipient) = get_contract_address()
     let (token) = token_address.read()
-    IERC20.transferFrom(contract_address=token, sender=sender, recipient=recipient, amount=amount)
+    IERC20.transferFrom(
+        contract_address=token, sender=sender, recipient=recipient, amount=ticket_amount * TICKET_PRICE
+    )
+
     PseudoRandom.add_to_seed(pseudo, sender, recipient)
     let (random) = PseudoRandom.get_pseudorandom(pseudo)
     return ()

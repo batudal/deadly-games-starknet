@@ -11,16 +11,10 @@ struct MyStruct:
     member second_member : MyStruct*
 end
 
-
-
 @l1_handler
-func registerPerks{
-    syscall_ptr : felt*,
-    pedersen_ptr : HashBuiltin*,
-    range_check_ptr,
-}(
-    from_address : felt, 
-    user : felt, 
+func registerPerks{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    from_address : felt,
+    user : felt,
     tokenId : felt,
     formation : felt,
     greed : felt,
@@ -33,6 +27,4 @@ func registerPerks{
     key : felt,
 ):
     assert from_address = DEADLY_PERKS_ADDRESS
-    
-
-
+end
