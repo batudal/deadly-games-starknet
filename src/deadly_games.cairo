@@ -2,6 +2,8 @@
 
 from openzeppelin.token.erc721.ERC721_Mintable_Burnable import constructor
 from starkware.cairo.common.math import assert_nn
+from starkware.cairo.common.cairo_builtins import HashBuiltin
+
 
 const DEADLY_PERKS_ADDRESS = (
     0x2Db8c2615db39a5eD8750B87aC8F217485BE11EC)
@@ -49,5 +51,6 @@ func bridge_handler{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
         sloth=sloth,
         key=key,
     )
-    user_perks.write(user=user, perks=_perks)
+    user_perks.write(user=user, value=_perks)
+    return ()
 end

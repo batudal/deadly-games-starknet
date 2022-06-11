@@ -14,6 +14,9 @@ karma = [
 greed = [
     "./src/greed.cairo",
 ]
+deadly_games = [
+    "./src/deadly_games.cairo",
+]
 
 [profile.ci.protostar.shared_command_configs]
 no_color=true
