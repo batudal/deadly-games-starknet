@@ -15,29 +15,7 @@ from starkware.starknet.common.syscalls import get_caller_address, get_contract_
 from openzeppelin.token.erc20.interfaces.IERC20 import IERC20
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.serialize import serialize_word
-from starkware.cairo.common.uint256 import (
-    uint256_add,
-    uint256_and,
-    uint256_cond_neg,
-    uint256_eq,
-    uint256_le,
-    uint256_lt,
-    uint256_mul,
-    uint256_neg,
-    uint256_not,
-    uint256_or,
-    uint256_shl,
-    uint256_shr,
-    uint256_signed_div_rem,
-    uint256_signed_le,
-    uint256_signed_lt,
-    uint256_signed_nn,
-    uint256_signed_nn_le,
-    uint256_sqrt,
-    uint256_sub,
-    uint256_unsigned_div_rem,
-    uint256_xor,
-)
+from starkware.cairo.common.uint256 import uint256_mul
 
 @storage_var
 func pseudo_address() -> (address : felt):
