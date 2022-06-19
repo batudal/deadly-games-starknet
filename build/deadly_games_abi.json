@@ -84,19 +84,38 @@
         "type": "event"
     },
     {
-        "inputs": [
+        "data": [
             {
-                "name": "prefixes_len",
+                "name": "index",
                 "type": "felt"
             },
             {
-                "name": "prefixes",
-                "type": "felt*"
+                "name": "length",
+                "type": "felt"
             }
         ],
-        "name": "constructor",
+        "keys": [],
+        "name": "perk_revealed",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "name": "from_address",
+                "type": "felt"
+            },
+            {
+                "name": "index",
+                "type": "felt"
+            },
+            {
+                "name": "length",
+                "type": "felt"
+            }
+        ],
+        "name": "reveal_handler",
         "outputs": [],
-        "type": "constructor"
+        "type": "l1_handler"
     },
     {
         "inputs": [
@@ -177,7 +196,7 @@
                 "type": "felt"
             },
             {
-                "name": "perk_selector",
+                "name": "prefix_id",
                 "type": "felt"
             }
         ],
@@ -194,15 +213,11 @@
     {
         "inputs": [
             {
-                "name": "input_len",
+                "name": "prefix_id",
                 "type": "felt"
             },
             {
-                "name": "input",
-                "type": "felt*"
-            },
-            {
-                "name": "n_bytes",
+                "name": "token_id",
                 "type": "felt"
             }
         ],
