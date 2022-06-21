@@ -1,11 +1,12 @@
 %lang starknet
+# %builtins output
 
 from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
-from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak, keccak_bigend
+from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak
 
 const DEADLY_PERKS_ADDRESS = (0xaB9F9F4e9aadf82Fbf0Fa171De0f5eebaf2D859f)
 
@@ -105,66 +106,79 @@ func compute_keccak{range_check_ptr, bitwise_ptr : BitwiseBuiltin*}(
     alloc_locals
     let (local keccak_ptr : felt*) = alloc()
     let keccak_ptr_start = keccak_ptr
-    tempvar n_bytes = 0
+    # let (local n_bytes : felt) = alloc()
     let (local input : felt*) = alloc()
     let (local input_ : felt) = alloc()
     if prefix_id == 0:
         assert input[0] = 'oitamroF'
         assert input[1] = ' :n'
         assert input[2] = token_id
-        input_ = 'Formation: '
-        n_bytes = 11
+        let input_ = 'Formation: '
+        # let n_bytes = 11
     end
     if prefix_id == 1:
         assert input[0] = ' :deerG'
         assert input[1] = token_id
-        input_ = 'Greed: '
-        n_bytes = 7
+        let input_ = 'Greed: '
+        # let n_bytes = 7
     end
     if prefix_id == 2:
         assert input[0] = ' :tsuL'
         assert input[1] = token_id
-        input_ = 'Lust: '
-        n_bytes = 6
+        let input_ = 'Lust: '
+        # let n_bytes = 6
     end
     if prefix_id == 3:
         assert input[0] = ' :htarW'
         assert input[1] = token_id
-        input_ = 'Wrath: '
-        n_bytes = 7
+        let input_ = 'Wrath: '
+        # let n_bytes = 7
     end
     if prefix_id == 4:
         assert input[0] = 'ynottulG'
         assert input[1] = ' :'
         assert input[2] = token_id
-        input_ = 'Gluttony: '
-        n_bytes = 10
+        let input_ = 'Gluttony: '
+        # let n_bytes = 10
     end
     if prefix_id == 5:
         assert input[0] = ' :edirP'
         assert input[1] = token_id
-        input_ = 'Pride: '
-        n_bytes = 7
+        let input_ = 'Pride: '
+        # let n_bytes = 7
     end
     if prefix_id == 6:
         assert input[0] = ' :yvnE'
         assert input[1] = token_id
-        input_ = 'Envy: '
-        n_bytes = 6
+        let input_ = 'Envy: '
+        # let n_bytes = 6
     end
     if prefix_id == 7:
         assert input[0] = ' :htolS'
         assert input[1] = token_id
-        input_ = 'Sloth: '
-        n_bytes = 7
+        let input_ = 'Sloth: '
+        # let n_bytes = 7
     end
     if prefix_id == 8:
         assert input[0] = ' :???'
         assert input[1] = token_id
-        input_ = '???: '
-        n_bytes = 5
+        let input_ = '???: '
+        # let n_bytes = 5
     end
-    let (output) = keccak{keccak_ptr=keccak_ptr}(input, n_bytes)
+
+    let (output : Uint256) = keccak{keccak_ptr=keccak_ptr}(input, 11)
+    # %{
+    #     input_str = input_
+    #     output = ''.join(v.to_bytes(8, 'little').hex() for v in memory.get_range(ids.output, 4))
+    #     print(f'Keccak of "{input_str}": {output}')
+    #     from web3 import Web3
+    #     assert '0x' + output == Web3.keccak(text=input_str).hex()
+    # %}
+    # assert output_ptr[0] = output[0]
+    # assert output_ptr[1] = output[1]
+    # assert output_ptr[2] = output[2]
+    # assert output_ptr[3] = output[3]
+
     finalize_keccak(keccak_ptr_start=keccak_ptr_start, keccak_ptr_end=keccak_ptr)
     return (output)
 end
