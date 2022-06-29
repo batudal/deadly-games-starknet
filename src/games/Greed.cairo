@@ -34,7 +34,7 @@ func greedyDao(user : felt) -> (amount : felt):
 end
 
 @external
-func greedyBastard{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     ticket_amount : felt
 ):
     let (pseudo) = pseudo_address.read()
