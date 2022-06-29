@@ -46,7 +46,6 @@ func greedyBastard{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     let _amount : Uint256 = uint256_mul(ticket_price, _ticket_amount)
 
     IERC20.transferFrom(contract_address=token, sender=sender, recipient=recipient, amount=_amount)
-
     linear_congruential_generator.add_to_seed(pseudo, sender, recipient)
 
     let (random) = linear_congruential_generator.get_pseudorandom(pseudo)
