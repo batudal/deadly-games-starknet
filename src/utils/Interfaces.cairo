@@ -12,6 +12,7 @@ end
 namespace IXoroshiro128:
     func next() -> (rnd : felt):
     end
+end
 
 @contract_interface
 namespace IController:

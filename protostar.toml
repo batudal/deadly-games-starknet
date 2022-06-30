@@ -8,14 +8,14 @@ libs_path = "lib"
 cairo_path = ["./lib/cairo_contracts/src"]
 
 ["protostar.contracts"]
-karma = [
-    "./src/karma.cairo",
-]
 greed = [
-    "./src/greed.cairo",
+    "./src/games/Greed.cairo",
+]
+xoroshiro = [
+    "./src/random/Xoroshiro128SS.cairo",
 ]
 deadly_games = [
-    "./src/deadly_games.cairo",
+    "./src/DeadlyGames.cairo",
 ]
 
 [profile.ci.protostar.shared_command_configs]
