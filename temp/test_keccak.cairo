@@ -20,8 +20,8 @@ func test_keccak{syscall_ptr : felt*, bitwise_ptr : BitwiseBuiltin*, range_check
     uint256_check(k)
     # 163350357956845617524507815902528900710
 
-    local s : Uint256 = Uint256(4, 0)
-    local t : Uint256 = Uint256(7, 0)
+    local s : Uint256 = cast((low=4, high=0), Uint256)
+    local t : Uint256 = cast((low=7, high=0), Uint256)
     let (q : Uint256, r : Uint256) = uint256_unsigned_div_rem(k, t)
     assert s = r
     return ()

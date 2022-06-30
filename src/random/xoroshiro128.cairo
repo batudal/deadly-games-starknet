@@ -66,17 +66,6 @@ func next{
     return (result)
 end
 
-@view
-func get_winning_tickets{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    _burnt_tickets : felt, _random_number : felt
-) -> (res : felt):
-    alloc_locals
-    const max_denominator = 18446744073709551615  # 0xffffffffffffffff
-    let num = _burnt_tickets * _random_number
-    let (winning, _) = unsigned_div_rem(num, max_denominator)
-    return (res=winning)
-end
-
 # calculates (x << k) | (x >> (64 - k))
 func rotl{bitwise_ptr : BitwiseBuiltin*, range_check_ptr}(x : felt, k : felt) -> (out : felt):
     alloc_locals
