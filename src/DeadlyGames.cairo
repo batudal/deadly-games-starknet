@@ -53,7 +53,7 @@ func update_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     name : felt, id : felt, author : felt, implementation : felt
 ):
     only_admin()
-    let game = games.read(id)
+    let (game) = games.read(id)
     game.name = name
     game.author = author
     game.implementation = implementation
@@ -65,12 +65,12 @@ func add_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     name : felt, author : felt, implementation : felt
 ):
     only_admin()
-    let game = Game(name, auther, implementation, 0)
-    let ctr = counter.read()
-    let id = ctr + 1
+    let (game) = Game(name, auther, implementation, 0)
+    let (ctr) = counter.read()
+    let (id) = ctr + 1
     games.write(id, game)
     counter.write(id)
-    return()
+    return ()
 end
 
 @external
@@ -83,13 +83,13 @@ end
 @external
 func disable_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt):
     only_admin()
-    let game = games.read(id)
+    let (game) = games.read(id)
     game.active = 0
     return ()
 end
 
 @view
 func is_active{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt):
-    let game = games.read(id)
+    let (game) = games.read(id)
     return (active=game.active)
 end

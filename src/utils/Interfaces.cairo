@@ -1,7 +1,7 @@
 %lang starknet
 
 @contract_interface
-namespace linear_congruential_generator:
+namespace ILCG:
     func get_pseudorandom() -> (num_to_use : felt):
     end
     func add_to_seed(val0 : felt, val1 : felt) -> (num_to_use : felt):
@@ -9,7 +9,7 @@ namespace linear_congruential_generator:
 end
 
 @contract_interface
-namespace xoroshiro128:
+namespace IXoroshiro128:
     func next() -> (rnd : felt):
     end
 
