@@ -1,231 +1,102 @@
 [
     {
-        "members": [
-            {
-                "name": "formation",
-                "offset": 0,
-                "type": "felt"
-            },
-            {
-                "name": "greed",
-                "offset": 1,
-                "type": "felt"
-            },
-            {
-                "name": "lust",
-                "offset": 2,
-                "type": "felt"
-            },
-            {
-                "name": "wrath",
-                "offset": 3,
-                "type": "felt"
-            },
-            {
-                "name": "gluttony",
-                "offset": 4,
-                "type": "felt"
-            },
-            {
-                "name": "pride",
-                "offset": 5,
-                "type": "felt"
-            },
-            {
-                "name": "envy",
-                "offset": 6,
-                "type": "felt"
-            },
-            {
-                "name": "sloth",
-                "offset": 7,
-                "type": "felt"
-            },
-            {
-                "name": "key",
-                "offset": 8,
-                "type": "felt"
-            }
-        ],
-        "name": "Perks",
-        "size": 9,
-        "type": "struct"
-    },
-    {
-        "members": [
-            {
-                "name": "low",
-                "offset": 0,
-                "type": "felt"
-            },
-            {
-                "name": "high",
-                "offset": 1,
-                "type": "felt"
-            }
-        ],
-        "name": "Uint256",
-        "size": 2,
-        "type": "struct"
-    },
-    {
-        "data": [
-            {
-                "name": "user",
-                "type": "felt"
-            },
-            {
-                "name": "tokenId",
-                "type": "felt"
-            }
-        ],
-        "keys": [],
-        "name": "perks_bridged",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
-                "name": "index",
-                "type": "felt"
-            },
-            {
-                "name": "length",
-                "type": "felt"
-            }
-        ],
-        "keys": [],
-        "name": "perk_revealed",
-        "type": "event"
-    },
-    {
         "inputs": [
             {
-                "name": "from_address",
-                "type": "felt"
-            },
-            {
-                "name": "index",
-                "type": "felt"
-            },
-            {
-                "name": "length",
+                "name": "admin_address",
                 "type": "felt"
             }
         ],
-        "name": "reveal_handler",
+        "name": "constructor",
         "outputs": [],
-        "type": "l1_handler"
+        "type": "constructor"
     },
     {
         "inputs": [
             {
-                "name": "from_address",
-                "type": "felt"
-            },
-            {
-                "name": "user",
-                "type": "felt"
-            },
-            {
-                "name": "tokenId",
-                "type": "felt"
-            },
-            {
-                "name": "formation",
-                "type": "felt"
-            },
-            {
-                "name": "greed",
-                "type": "felt"
-            },
-            {
-                "name": "lust",
-                "type": "felt"
-            },
-            {
-                "name": "wrath",
-                "type": "felt"
-            },
-            {
-                "name": "gluttony",
-                "type": "felt"
-            },
-            {
-                "name": "pride",
-                "type": "felt"
-            },
-            {
-                "name": "envy",
-                "type": "felt"
-            },
-            {
-                "name": "sloth",
-                "type": "felt"
-            },
-            {
-                "name": "key",
+                "name": "admin_address",
                 "type": "felt"
             }
         ],
-        "name": "bridge_handler",
+        "name": "set_admin",
         "outputs": [],
-        "type": "l1_handler"
-    },
-    {
-        "inputs": [
-            {
-                "name": "user",
-                "type": "felt"
-            }
-        ],
-        "name": "get_user_perks",
-        "outputs": [
-            {
-                "name": "res",
-                "type": "Perks"
-            }
-        ],
-        "stateMutability": "view",
         "type": "function"
     },
     {
         "inputs": [
             {
-                "name": "token_id",
+                "name": "name",
                 "type": "felt"
             },
             {
-                "name": "prefix_id",
+                "name": "id",
                 "type": "felt"
-            }
-        ],
-        "name": "get_perk_index",
-        "outputs": [
+            },
             {
-                "name": "res",
+                "name": "author",
+                "type": "felt"
+            },
+            {
+                "name": "implementation",
                 "type": "felt"
             }
         ],
-        "stateMutability": "view",
+        "name": "update_game",
+        "outputs": [],
         "type": "function"
     },
     {
         "inputs": [
             {
-                "name": "prefix_id",
+                "name": "name",
                 "type": "felt"
             },
             {
-                "name": "token_id",
+                "name": "author",
+                "type": "felt"
+            },
+            {
+                "name": "implementation",
                 "type": "felt"
             }
         ],
-        "name": "compute_keccak",
+        "name": "add_game",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "activate_game",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "disable_game",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "is_active",
         "outputs": [
             {
-                "name": "res",
-                "type": "Uint256"
+                "name": "active",
+                "type": "felt"
             }
         ],
         "stateMutability": "view",

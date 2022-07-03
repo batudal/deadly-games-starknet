@@ -1,6 +1,6 @@
 %lang starknet
 
-from src.utils.Constants import (
+from src.modules.games.greed.Constants import (
     JACKPOT_CHANCE,
     WINNER_PERCENTAGE,
     MASON_PERCENTAGE,
@@ -9,7 +9,7 @@ from src.utils.Constants import (
     PERCENTAGE,
     TICKET_PRICE,
 )
-from src.utils.Interfaces import IXoroshiro128
+from src.helpers.Interfaces import IXoroshiro128
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.starknet.common.syscalls import (
@@ -85,12 +85,14 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
     let (sender) = get_caller_address()
     let (recipient) = get_contract_address()
     let (_token) = token.read()
-    let ticket_price : Uint256 = cast((low=0, high=TICKET_PRICE), Uint256)
-    let _ticket_amount : Uint256 = cast((low=0, high=ticket_amount), Uint256)
-    let _amount : Uint256 = uint256_mul(ticket_price, _ticket_amount)
-    IERC20.transferFrom(contract_address=_token, sender=sender, recipient=recipient, amount=_amount)
+    local ticket_price : Uint256 = Uint256(TICKET_PRICE, 0)
+    local _ticket_amount : Uint256 = Uint256(low=ticket_amount, high=0)
+    let (_amount_low, _amount_high) = uint256_mul(ticket_price, _ticket_amount)
+    IERC20.transferFrom(
+        contract_address=_token, sender=sender, recipient=recipient, amount=_amount_low
+    )
     let (current_jackpot) = jackpot_amount.read()
-    let (total_jackpot, carry) = uint256_add(current_jackpot, _amount)
+    let (total_jackpot, carry) = uint256_add(current_jackpot, _amount_low)
     jackpot_amount.write(total_jackpot)
 
     # reward karma
@@ -99,29 +101,30 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
 
     # rng
     let (rnd) = get_next_rnd()
-    let (_, r) = unsigned_div_rem(rnd, 100)
+    let (q, r) = unsigned_div_rem(rnd, 100)
+    let (_epoch) = epoch.read()
+    let (_wincount) = win_counts.read(sender)
+    let (block_timestamp) = get_block_timestamp()
+    let jackpot : Jackpot = Jackpot(
+        winner=sender,
+        winner_count=_wincount,
+        epoch=_epoch,
+        total_amount=total_jackpot,
+        timestamp=block_timestamp,
+    )
 
-    # register and mint
+    # # register and mint
     if r != 0:
         # IERC1155.mint(
         #     contract_address=loser_token, sender=sender, recipient=recipient, amount=_amount
         # )
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
     else:
         # announce
-        let (local _epoch) = epoch.read()
-        let (local _wincount) = win_counts.read(sender)
-        let (block_timestamp) = get_block_timestamp()
-        let jackpot = Jackpot(
-            winner=sender,
-            winner_count=_wincount,
-            epoch=_epoch,
-            total_amount=total_jackpot,
-            timestamp=block_timestamp,
-        )
         jackpots.write(_epoch, jackpot)
-        # IERC1155.mint(
-        #     contract_address=winner_token, sender=sender, recipient=recipient, amount=_amount
-        # )
+        # IERC1155.mint(contract_address=winner_token, sender=sender, recipient=recipient, amount=_amount)
         win_counts.write(user=sender, value=_wincount + 1)
 
         # convert
@@ -132,24 +135,31 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
         let reserve_percentage : Uint256 = Uint256(low=RESERVE_PERCENTAGE, high=0)
 
         # distribute
-        let (share, rem) = uint256_unsigned_div_rem(total_jackpot, percentage)
-        let winner_share : Uint256 = uint256_mul(share, winner_percentage)
-        let mason_share : Uint256 = uint256_mul(share, mason_percentage)
-        let dev_share : Uint256 = uint256_mul(share, dev_percentage)
-        let reserve_share : Uint256 = uint256_mul(share, reserve_percentage)
+        let (local share, rem) = uint256_unsigned_div_rem(total_jackpot, percentage)
+        let (local winner_share_low, winner_share_high) = uint256_mul(share, winner_percentage)
+        let (local mason_share_low, mason_share_high) = uint256_mul(share, mason_percentage)
+        let (local dev_share_low, dev_share_high) = uint256_mul(share, dev_percentage)
+        let (local reserve_share_low, reserve_share_high) = uint256_mul(share, reserve_percentage)
         let (local current_treasury) = treasury_amount.read()
-
-        IERC20.transfer(contract_address=_token, recipient=sender, amount=winner_share)
-        IERC20.transfer(contract_address=_token, recipient=sender, amount=dev_share)
-        jackpot_amount.write(reserve_share)
-        let for_treasury : Uint256 = uint256_add(current_treasury, mason_share)
+        IERC20.transfer(contract_address=_token, recipient=sender, amount=winner_share_low)
+        IERC20.transfer(contract_address=_token, recipient=sender, amount=dev_share_low)
+        jackpot_amount.write(reserve_share_low)
+        let (local for_treasury, carry) = uint256_add(current_treasury, mason_share_low)
         treasury_amount.write(for_treasury)
+
+        # align ptrs
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
     end
     return ()
 end
 
 @external
-func get_next_rnd{syscall_ptr : felt*, range_check_ptr}() -> (rnd : felt):
+func get_next_rnd{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    rnd : felt
+):
+    alloc_locals
     let (local addr) = pseudo_address.read()
     let (rnd) = IXoroshiro128.next(contract_address=addr)
     return (rnd)

@@ -16,9 +16,9 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     return ()
 end
 
-#
-# Getters
-#
+# --------------------------- #
+# view fxns
+# --------------------------- #
 
 @view
 func name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (name : felt):
@@ -70,9 +70,9 @@ func owner{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() 
     return (owner)
 end
 
-#
-# Externals
-#
+# --------------------------- #
+# mutative fxns
+# --------------------------- #
 
 @external
 func transfer{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(

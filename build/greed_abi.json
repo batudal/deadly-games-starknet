@@ -2,12 +2,34 @@
     {
         "inputs": [
             {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "set_pseudo_address",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "ticket_amount",
                 "type": "felt"
             }
         ],
-        "name": "greedyBastard",
+        "name": "greed",
         "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_next_rnd",
+        "outputs": [
+            {
+                "name": "rnd",
+                "type": "felt"
+            }
+        ],
         "type": "function"
     }
 ]

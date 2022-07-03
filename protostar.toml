@@ -9,10 +9,10 @@ cairo_path = ["./lib/cairo_contracts/src"]
 
 ["protostar.contracts"]
 greed = [
-    "./src/games/Greed.cairo",
+    "./src/modules/games/greed/Greed.cairo",
 ]
 xoroshiro = [
-    "./src/random/Xoroshiro128SS.cairo",
+    "./src/modules/utils/random/Xoroshiro128SS.cairo",
 ]
 deadly_games = [
     "./src/DeadlyGames.cairo",

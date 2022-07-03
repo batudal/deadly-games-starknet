@@ -4,12 +4,33 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero
 from starkware.starknet.common.syscalls import get_caller_address
 
+# ------------------------------------------------- #
+#
+# Deadly Games
+#
+# This contract allows for module operations.
+# Modules get access to Karma minting.
+# Admin role will be transferred to DAO account.
+#
+# Author: @takez0_o
+# Sponsorship: @dec0ded
+#
+# ------------------------------------------------- #
+
+# --------------------------- #
+# types
+# --------------------------- #
+
 struct Game:
     member name : felt
     member author : felt
     member implementation : felt
     member active : felt
 end
+
+# --------------------------- #
+# storage vars
+# --------------------------- #
 
 @storage_var
 func counter() -> (count : felt):
@@ -23,6 +44,10 @@ end
 func admin() -> (address : felt):
 end
 
+# --------------------------- #
+# initializer
+# --------------------------- #
+
 @constructor
 func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
@@ -31,6 +56,10 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     return ()
 end
 
+# --------------------------- #
+# internal fxns
+# --------------------------- #
+
 func only_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
     alloc_locals
     let (local caller) = get_caller_address()
@@ -38,6 +67,10 @@ func only_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     assert caller = current
     return ()
 end
+
+# --------------------------- #
+# mutative fxns
+# --------------------------- #
 
 @external
 func set_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -64,10 +97,11 @@ end
 func add_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     name : felt, author : felt, implementation : felt
 ):
+    alloc_locals
     only_admin()
-    let (game) = Game(name, auther, implementation, 0)
+    local game : Game = Game(name, author, implementation, 0)
     let (ctr) = counter.read()
-    let (id) = ctr + 1
+    let id = ctr + 1
     games.write(id, game)
     counter.write(id)
     return ()
@@ -75,21 +109,30 @@ end
 
 @external
 func activate_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt):
-    let game = games.read(id)
+    alloc_locals
+    only_admin()
+    let (local game : Game) = games.read(id)
     game.active = 1
     return ()
 end
 
 @external
 func disable_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt):
+    alloc_locals
     only_admin()
-    let (game) = games.read(id)
+    let (local game : Game) = games.read(id)
     game.active = 0
     return ()
 end
 
+# --------------------------- #
+# view fxns
+# --------------------------- #
+
 @view
-func is_active{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt):
+func is_active{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt) -> (
+    active : felt
+):
     let (game) = games.read(id)
     return (active=game.active)
 end
