@@ -191,11 +191,9 @@ func emergency_shutdown{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     to_address : felt, admin_address : felt
 ):
     only_deadly_games()
-    let (current_jackpot) = jackpot_amount.read()
-    let (current_treasury) = treasury_amount.read()
-    let (local amount) = uint256_add(current_jackpot, current_treasury)
     let (_token) = token.read()
     let (sender) = get_contract_address()
+    let (local amount : Uint256) = IERC20.balance_of(contract_address=_token, account=sender)
     IERC20.transferFrom(
         contract_address=_token, sender=sender, recipient=admin_address, amount=amount
     )

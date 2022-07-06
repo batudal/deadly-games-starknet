@@ -3,18 +3,9 @@
 from src.helpers.Interfaces import IDeadlyGames
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
-from starkware.starknet.common.syscalls import (
-    get_caller_address,
-    get_contract_address,
-    get_block_timestamp,
-)
+from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 from openzeppelin.token.erc20.interfaces.IERC20 import IERC20
-from starkware.cairo.common.uint256 import (
-    Uint256,
-    uint256_mul,
-    uint256_unsigned_div_rem,
-    uint256_add,
-)
+from starkware.cairo.common.uint256 import Uint256, uint256_add
 
 @storage_var
 func token() -> (address : felt):
@@ -49,10 +40,10 @@ func emergency_shutdown{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     to_address : felt, admin_address : felt
 ):
     only_deadly_games()
-    let (current_jackpot) = jackpot_amount.read()
     let (_token) = token.read()
     let (sender) = get_contract_address()
+    let (local amount : Uint256) = IERC20.balance_of(contract_address=_token, account=sender)
     IERC20.transferFrom(
-        contract_address=_token, sender=sender, recipient=admin_address, amount=current_jackpot
+        contract_address=_token, sender=sender, recipient=admin_address, amount=amount
     )
 end
