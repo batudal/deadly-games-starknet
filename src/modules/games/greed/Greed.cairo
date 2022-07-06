@@ -10,6 +10,7 @@ from src.modules.games.greed.Constants import (
     TICKET_PRICE,
 )
 from src.helpers.Interfaces import IXoroshiro128
+from src.helpers.Interfaces import IDeadlyGames
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.starknet.common.syscalls import (
@@ -24,7 +25,6 @@ from starkware.cairo.common.uint256 import (
     uint256_unsigned_div_rem,
     uint256_add,
 )
-from starkware.cairo.common.serialize import serialize_word
 
 struct Jackpot:
     member winner : felt
@@ -59,7 +59,11 @@ func token() -> (address : felt):
 end
 
 @storage_var
-func karma_token() -> (address : felt):
+func karma_addr() -> (address : felt):
+end
+
+@storage_var
+func deadly_games_addr() -> (address : felt):
 end
 
 @storage_var
@@ -96,9 +100,10 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
     jackpot_amount.write(total_jackpot)
 
     # reward karma
-    let (karma_tokn) = karma_token.read()
-    IERC20.transfer(contract_address=karma_tokn, recipient=sender, amount=_ticket_amount)
-
+    let (deadly_games_address) = deadly_games_addr.read()
+    IDeadlyGames.mint_karma(
+        contract_address=deadly_games_address, amount=_ticket_amount, user=sender
+    )
     # rng
     let (rnd) = get_next_rnd()
     let (q, r) = unsigned_div_rem(rnd, 100)

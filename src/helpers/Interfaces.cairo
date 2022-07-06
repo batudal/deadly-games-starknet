@@ -19,3 +19,13 @@ namespace IController:
     func has_write_access(writer : felt):
     end
 end
+
+@contract_interface
+namespace IERC1155:
+end
+
+@contract_interface
+namespace IDeadlyGames:
+    func mint_karma(amount : Uint256, user : felt):
+    end
+end

@@ -3,6 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero
 from starkware.starknet.common.syscalls import get_caller_address
+from openzeppelin.token.erc20.interfaces.IERC20 import IERC20
 
 # ------------------------------------------------- #
 #
@@ -12,8 +13,12 @@ from starkware.starknet.common.syscalls import get_caller_address
 # Modules get access to Karma minting.
 # Admin role will be transferred to DAO account.
 #
+# Make your game contract ownable and transfer
+# ownership to this contract upon deployment.
+#
 # Author: @takez0_o
-# Sponsorship: @dec0ded
+# Supported by: @matchboxDAO
+# Originated in: @decodedLabs
 #
 # ------------------------------------------------- #
 
@@ -42,6 +47,15 @@ end
 
 @storage_var
 func admin() -> (address : felt):
+end
+
+@storage_var
+func karma_token() -> (address : felt):
+end
+
+# 0-no access, 1-has access
+@storage_var
+func module_access(address : felt) -> (access : felt):
 end
 
 # --------------------------- #
@@ -73,10 +87,26 @@ end
 # --------------------------- #
 
 @external
+func mint_karma{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    amount : Uint256, user : felt
+):
+    # check module access
+    let (sender) = get_caller_address
+    let (access_state) = module_access.read(address=sender)
+    assert access_state = 1
+
+    # mint karma
+    let (karma_address) = karma_token.read()
+    IERC20.mint(contract_address=karma_address, recipient=user, amount=amount)
+end
+
+@external
 func set_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
 ):
     only_admin()
+    let (karma_address) = karma_token.read()
+    IERC20.transferOwnership(contract_address=karma_address, recipient=admin_address)
     admin.write(admin_address)
     return ()
 end
@@ -103,6 +133,7 @@ func add_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     let (ctr) = counter.read()
     let id = ctr + 1
     games.write(id, game)
+    module_access.write(implementation, 1)
     counter.write(id)
     return ()
 end
