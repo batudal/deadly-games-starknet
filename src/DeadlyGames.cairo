@@ -4,6 +4,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero
 from starkware.starknet.common.syscalls import get_caller_address
 from openzeppelin.token.erc20.interfaces.IERC20 import IERC20
+from src.helpers.Interfaces import IGame
 
 # ------------------------------------------------- #
 #
@@ -85,6 +86,20 @@ end
 # --------------------------- #
 # mutative fxns
 # --------------------------- #
+
+@external
+func emergency_shutdown{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    id : felt, to_address : felt
+):
+    only_admin()
+    let (admin_address) = admin.read()
+    let (game_address) = games.read(id)
+    IGame.emergency_shutdown(
+        contract_address=game_address, to_address=to_address, admin_address=admin_address
+    )
+
+    return ()
+end
 
 @external
 func mint_karma{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(

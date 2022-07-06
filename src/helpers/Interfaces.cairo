@@ -29,3 +29,9 @@ namespace IDeadlyGames:
     func mint_karma(amount : Uint256, user : felt):
     end
 end
+
+@contract_interface
+namespace IGame:
+    func emergency_shutdown(to_address : felt):
+    end
+end
