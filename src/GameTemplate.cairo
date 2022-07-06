@@ -1,15 +1,5 @@
 %lang starknet
 
-from src.modules.games.greed.Constants import (
-    JACKPOT_CHANCE,
-    WINNER_PERCENTAGE,
-    MASON_PERCENTAGE,
-    DEV_PERCENTAGE,
-    RESERVE_PERCENTAGE,
-    PERCENTAGE,
-    TICKET_PRICE,
-)
-from src.helpers.Interfaces import IXoroshiro128
 from src.helpers.Interfaces import IDeadlyGames
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
@@ -26,34 +16,6 @@ from starkware.cairo.common.uint256 import (
     uint256_add,
 )
 
-struct Jackpot:
-    member winner : felt
-    member winner_count : felt
-    member epoch : felt
-    member total_amount : Uint256
-    member timestamp : felt
-end
-
-@storage_var
-func win_counts(user : felt) -> (count : felt):
-end
-
-@storage_var
-func jackpots(epoch : felt) -> (jackpot : Jackpot):
-end
-
-@storage_var
-func epoch() -> (count : felt):
-end
-
-@storage_var
-func highest_jackpot() -> (count : felt):
-end
-
-@storage_var
-func pseudo_addr() -> (address : felt):
-end
-
 @storage_var
 func token() -> (address : felt):
 end
@@ -64,14 +26,6 @@ end
 
 @storage_var
 func deadly_games_addr() -> (address : felt):
-end
-
-@storage_var
-func jackpot_amount() -> (amount : Uint256):
-end
-
-@storage_var
-func treasury_amount() -> (amount : Uint256):
 end
 
 @constructor
@@ -88,24 +42,6 @@ func only_deadly_games{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
     let (current) = deadly_games_addr.read()
     assert caller = current
     return ()
-end
-
-@external
-func set_pseudo_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    address : felt
-):
-    pseudo_addr.write(address)
-    return ()
-end
-
-@external
-func get_next_rnd{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
-    rnd : felt
-):
-    alloc_locals
-    let (local addr) = pseudo_address.read()
-    let (rnd) = IXoroshiro128.next(contract_address=addr)
-    return (rnd)
 end
 
 @external
