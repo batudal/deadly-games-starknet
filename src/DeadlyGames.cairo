@@ -3,8 +3,8 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_not_zero
 from starkware.starknet.common.syscalls import get_caller_address
-from openzeppelin.token.erc20.interfaces.IERC20 import IERC20
-from src.helpers.Interfaces import IGame
+from src.helpers.Interfaces import IGame, IKarma
+from starkware.cairo.common.uint256 import Uint256
 
 # ------------------------------------------------- #
 #
@@ -59,6 +59,10 @@ end
 func module_access(address : felt) -> (access : felt):
 end
 
+@storage_var
+func dao_active() -> (state : felt):
+end
+
 # --------------------------- #
 # initializer
 # --------------------------- #
@@ -88,31 +92,19 @@ end
 # --------------------------- #
 
 @external
-func emergency_shutdown{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    id : felt, to_address : felt
-):
-    only_admin()
-    let (admin_address) = admin.read()
-    let (game_address) = games.read(id)
-    IGame.emergency_shutdown(
-        contract_address=game_address, to_address=to_address, admin_address=admin_address
-    )
-
-    return ()
-end
-
-@external
 func mint_karma{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     amount : Uint256, user : felt
 ):
+    alloc_locals
     # check module access
-    let (sender) = get_caller_address
+    let (local sender) = get_caller_address()
     let (access_state) = module_access.read(address=sender)
     assert access_state = 1
 
     # mint karma
     let (karma_address) = karma_token.read()
-    IERC20.mint(contract_address=karma_address, recipient=user, amount=amount)
+    IKarma.mint(contract_address=karma_address, to=user, amount=amount)
+    return ()
 end
 
 @external
@@ -121,7 +113,7 @@ func set_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
 ):
     only_admin()
     let (karma_address) = karma_token.read()
-    IERC20.transferOwnership(contract_address=karma_address, recipient=admin_address)
+    IKarma.transferOwnership(contract_address=karma_address, newOwner=admin_address)
     admin.write(admin_address)
     return ()
 end
@@ -168,6 +160,30 @@ func disable_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
     only_admin()
     let (local game : Game) = games.read(id)
     game.active = 0
+    return ()
+end
+
+@external
+func emergency_shutdown{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    id : felt, to_address : felt
+):
+    alloc_locals
+    only_admin()
+    let (local dao_state : felt) = dao_active.read()
+    assert dao_state = 1
+    let (admin_address) = admin.read()
+    let (game) = games.read(id)
+    IGame.emergency_shutdown(contract_address=game.implementation, to_address=admin_address)
+    return ()
+end
+
+@external
+func transcendence{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    dao_address : felt
+):
+    only_admin()
+    set_admin(dao_address)
+    dao_active.write(1)
     return ()
 end
 

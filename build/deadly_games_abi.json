@@ -1,5 +1,22 @@
 [
     {
+        "members": [
+            {
+                "name": "low",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "high",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Uint256",
+        "size": 2,
+        "type": "struct"
+    },
+    {
         "inputs": [
             {
                 "name": "admin_address",
@@ -9,6 +26,21 @@
         "name": "constructor",
         "outputs": [],
         "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "amount",
+                "type": "Uint256"
+            },
+            {
+                "name": "user",
+                "type": "felt"
+            }
+        ],
+        "name": "mint_karma",
+        "outputs": [],
+        "type": "function"
     },
     {
         "inputs": [
@@ -82,6 +114,32 @@
             }
         ],
         "name": "disable_game",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            },
+            {
+                "name": "to_address",
+                "type": "felt"
+            }
+        ],
+        "name": "emergency_shutdown",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "dao_address",
+                "type": "felt"
+            }
+        ],
+        "name": "transcendence",
         "outputs": [],
         "type": "function"
     },

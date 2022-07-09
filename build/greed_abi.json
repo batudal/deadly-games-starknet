@@ -1,5 +1,63 @@
 [
     {
+        "data": [
+            {
+                "name": "user",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "greed_entry",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "user",
+                "type": "felt"
+            },
+            {
+                "name": "count",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "greed_winner",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "user",
+                "type": "felt"
+            },
+            {
+                "name": "count",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "greed_loser",
+        "type": "event"
+    },
+    {
+        "data": [],
+        "keys": [],
+        "name": "emergency_shutdown_executed",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "name": "deadly_games_address",
+                "type": "felt"
+            }
+        ],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
         "inputs": [
             {
                 "name": "address",
@@ -30,6 +88,21 @@
                 "type": "felt"
             }
         ],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "to_address",
+                "type": "felt"
+            },
+            {
+                "name": "admin_address",
+                "type": "felt"
+            }
+        ],
+        "name": "emergency_shutdown",
+        "outputs": [],
         "type": "function"
     }
 ]

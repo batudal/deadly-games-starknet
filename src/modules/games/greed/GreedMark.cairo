@@ -189,28 +189,55 @@ end
 
 # additional
 
-@storage_var
-func id_to_count(id : felt) -> (count : felt):
+struct Record:
+    member fcker_id : felt
+    member lcker_id : felt
+    member fcker_count : felt
+    member lcker_count : felt
 end
 
 @storage_var
-func deadly_games_addr() -> (address : felt):
+func user_records(user : felt) -> (record : Record):
+end
+
+@storage_var
+func greed_addr() -> (address : felt):
+end
+
+func only_greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    alloc_locals
+    let (local caller) = get_caller_address()
+    let (current) = greed_addr.read()
+    assert caller = current
+    return ()
 end
 
 @external
-func set_deadly_addr{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    addr : felt
-):
-    Ownable.assert_only_owner()
-    deadly_games_addr.write(addr)
+func set_greed_addr{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(addr : felt):
+    only_greed()
+    greed_addr.write(addr)
 end
 
 @external
-func set_count{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    id : felt, increment : felt
+func mint_mark{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    to : felt, amount : felt, type : felt
 ):
-    Ownable.assert_only_owner()
-    let current_count = id_to_count.read()
-    let final_count = current_count + increment
-    id_to_count.write(id, final_count)
+    alloc_locals
+    only_greed()
+
+    let user_record = user_records(to)
+
+    if type == 0:
+        let (local fcker_count) = user_record.fcker_count
+        user_record.fcker_count = fcker_count + amount
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        let (local lcker_count) = user_record.lcker_count
+        user_record.lcker_count = lcker_count + amount
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
 end

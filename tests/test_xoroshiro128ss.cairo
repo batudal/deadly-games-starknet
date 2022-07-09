@@ -5,7 +5,7 @@ from protostar.asserts import assert_eq, assert_not_eq
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 
 @external
-func test_xoroshiro{syscall_ptr : felt*, range_check_ptr}():
+func test_basic_function{syscall_ptr : felt*, range_check_ptr}():
     alloc_locals
     local contract_address : felt
     %{ ids.contract_address = deploy_contract("./src/random/xoroshiro128.cairo", [42]).contract_address %}

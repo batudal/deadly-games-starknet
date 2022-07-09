@@ -1,5 +1,7 @@
 %lang starknet
 
+from starkware.cairo.common.uint256 import Uint256
+
 @contract_interface
 namespace ILCG:
     func get_pseudorandom() -> (num_to_use : felt):
@@ -21,10 +23,6 @@ namespace IController:
 end
 
 @contract_interface
-namespace IERC1155:
-end
-
-@contract_interface
 namespace IDeadlyGames:
     func mint_karma(amount : Uint256, user : felt):
     end
@@ -33,5 +31,14 @@ end
 @contract_interface
 namespace IGame:
     func emergency_shutdown(to_address : felt):
+    end
+end
+
+@contract_interface
+namespace IKarma:
+    func mint(to : felt, amount : Uint256):
+    end
+
+    func transferOwnership(newOwner : felt):
     end
 end

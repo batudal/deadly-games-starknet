@@ -11,6 +11,7 @@ from src.modules.games.greed.Constants import (
 )
 from src.helpers.Interfaces import IXoroshiro128
 from src.helpers.Interfaces import IDeadlyGames
+from src.modules.games.greed.IGreedMark import IGreedMark
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.starknet.common.syscalls import (
@@ -25,6 +26,22 @@ from starkware.cairo.common.uint256 import (
     uint256_unsigned_div_rem,
     uint256_add,
 )
+
+@event
+func greed_entry(user : felt):
+end
+
+@event
+func greed_winner(user : felt, count : felt):
+end
+
+@event
+func greed_loser(user : felt, count : felt):
+end
+
+@event
+func emergency_shutdown_executed():
+end
 
 struct Jackpot:
     member winner : felt
@@ -67,6 +84,10 @@ func deadly_games_addr() -> (address : felt):
 end
 
 @storage_var
+func greed_mark_addr() -> (address : felt):
+end
+
+@storage_var
 func jackpot_amount() -> (amount : Uint256):
 end
 
@@ -103,6 +124,7 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
     alloc_locals
     # deposit
     let (sender) = get_caller_address()
+    greed_entry.emit(sender)
     let (recipient) = get_contract_address()
     let (_token) = token.read()
     local ticket_price : Uint256 = Uint256(TICKET_PRICE, 0)
@@ -136,9 +158,10 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
 
     # # register and mint
     if r != 0:
-        # IERC1155.mint(
-        #     contract_address=loser_token, sender=sender, recipient=recipient, amount=_amount
-        # )
+        let (local greed_mark_address) = greed_mark_addr.read()
+        IGreedMark.mint_mark(
+            contract_address=greed_mark_address, to=recipient, amount=ticket_amount, type=0
+        )
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
@@ -181,7 +204,7 @@ func get_next_rnd{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
     rnd : felt
 ):
     alloc_locals
-    let (local addr) = pseudo_address.read()
+    let (local addr) = pseudo_addr.read()
     let (rnd) = IXoroshiro128.next(contract_address=addr)
     return (rnd)
 end
@@ -190,11 +213,13 @@ end
 func emergency_shutdown{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     to_address : felt, admin_address : felt
 ):
+    alloc_locals
     only_deadly_games()
     let (_token) = token.read()
     let (sender) = get_contract_address()
-    let (local amount : Uint256) = IERC20.balance_of(contract_address=_token, account=sender)
+    let (local amount : Uint256) = IERC20.balanceOf(contract_address=_token, account=sender)
     IERC20.transferFrom(
         contract_address=_token, sender=sender, recipient=admin_address, amount=amount
     )
+    return ()
 end
