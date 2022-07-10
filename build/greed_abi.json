@@ -4,6 +4,10 @@
             {
                 "name": "user",
                 "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "felt"
             }
         ],
         "keys": [],
@@ -60,11 +64,23 @@
     {
         "inputs": [
             {
-                "name": "address",
+                "name": "token_address",
+                "type": "felt"
+            },
+            {
+                "name": "deadly_games_address",
+                "type": "felt"
+            },
+            {
+                "name": "karma_address",
+                "type": "felt"
+            },
+            {
+                "name": "pseudo_address",
                 "type": "felt"
             }
         ],
-        "name": "set_pseudo_address",
+        "name": "set_addresses",
         "outputs": [],
         "type": "function"
     },

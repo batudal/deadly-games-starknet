@@ -19,7 +19,7 @@ from starkware.starknet.common.syscalls import (
     get_contract_address,
     get_block_timestamp,
 )
-from openzeppelin.token.erc20.interfaces.IERC20 import IERC20
+from src.openzeppelin.token.erc20.interfaces.IERC20 import IERC20
 from starkware.cairo.common.uint256 import (
     Uint256,
     uint256_mul,
@@ -28,7 +28,7 @@ from starkware.cairo.common.uint256 import (
 )
 
 @event
-func greed_entry(user : felt):
+func greed_entry(amount : felt):
 end
 
 @event
@@ -72,7 +72,7 @@ func pseudo_addr() -> (address : felt):
 end
 
 @storage_var
-func token() -> (address : felt):
+func token_addr() -> (address : felt):
 end
 
 @storage_var
@@ -112,10 +112,21 @@ func only_deadly_games{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
 end
 
 @external
-func set_pseudo_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    address : felt
+func set_addresses{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    token_address : felt, deadly_games_address : felt, karma_address : felt, pseudo_address : felt
 ):
-    pseudo_addr.write(address)
+    token_addr.write(token_address)
+    deadly_games_addr.write(deadly_games_address)
+    karma_addr.write(karma_address)
+    pseudo_addr.write(pseudo_address)
+    return ()
+end
+
+@external
+func set_pseudo_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    pseudo_address : felt
+):
+    pseudo_addr.write(pseudo_address)
     return ()
 end
 
@@ -124,24 +135,24 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
     alloc_locals
     # deposit
     let (sender) = get_caller_address()
-    greed_entry.emit(sender)
+    greed_entry.emit(ticket_amount)
     let (recipient) = get_contract_address()
-    let (_token) = token.read()
+    let (_token) = token_addr.read()
     local ticket_price : Uint256 = Uint256(TICKET_PRICE, 0)
     local _ticket_amount : Uint256 = Uint256(low=ticket_amount, high=0)
     let (_amount_low, _amount_high) = uint256_mul(ticket_price, _ticket_amount)
-    IERC20.transferFrom(
-        contract_address=_token, sender=sender, recipient=recipient, amount=_amount_low
-    )
+    # IERC20.transferFrom(
+    #     contract_address=_token, sender=sender, recipient=recipient, amount=_amount_low
+    # )
     let (current_jackpot) = jackpot_amount.read()
     let (total_jackpot, carry) = uint256_add(current_jackpot, _amount_low)
     jackpot_amount.write(total_jackpot)
 
     # reward karma
     let (deadly_games_address) = deadly_games_addr.read()
-    IDeadlyGames.mint_karma(
-        contract_address=deadly_games_address, amount=_ticket_amount, user=sender
-    )
+    # IDeadlyGames.mint_karma(
+    #     contract_address=deadly_games_address, amount=_ticket_amount, user=sender
+    # )
     # rng
     let (rnd) = get_next_rnd()
     let (q, r) = unsigned_div_rem(rnd, 100)
@@ -159,16 +170,15 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
     # # register and mint
     if r != 0:
         let (local greed_mark_address) = greed_mark_addr.read()
-        IGreedMark.mint_mark(
-            contract_address=greed_mark_address, to=recipient, amount=ticket_amount, type=0
-        )
+        # IGreedMark.mint_mark(
+        #     contract_address=greed_mark_address, to=recipient, amount=ticket_amount, type=0
+        # )
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
     else:
         # announce
         jackpots.write(_epoch, jackpot)
-        # IERC1155.mint(contract_address=winner_token, sender=sender, recipient=recipient, amount=_amount)
         win_counts.write(user=sender, value=_wincount + 1)
 
         # convert
@@ -185,8 +195,8 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
         let (local dev_share_low, dev_share_high) = uint256_mul(share, dev_percentage)
         let (local reserve_share_low, reserve_share_high) = uint256_mul(share, reserve_percentage)
         let (local current_treasury) = treasury_amount.read()
-        IERC20.transfer(contract_address=_token, recipient=sender, amount=winner_share_low)
-        IERC20.transfer(contract_address=_token, recipient=sender, amount=dev_share_low)
+        # IERC20.transfer(contract_address=_token, recipient=sender, amount=winner_share_low)
+        # IERC20.transfer(contract_address=_token, recipient=sender, amount=dev_share_low)
         jackpot_amount.write(reserve_share_low)
         let (local for_treasury, carry) = uint256_add(current_treasury, mason_share_low)
         treasury_amount.write(for_treasury)
@@ -215,7 +225,7 @@ func emergency_shutdown{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
 ):
     alloc_locals
     only_deadly_games()
-    let (_token) = token.read()
+    let (_token) = token_addr.read()
     let (sender) = get_contract_address()
     let (local amount : Uint256) = IERC20.balanceOf(contract_address=_token, account=sender)
     IERC20.transferFrom(

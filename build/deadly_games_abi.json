@@ -17,12 +17,7 @@
         "type": "struct"
     },
     {
-        "inputs": [
-            {
-                "name": "admin_address",
-                "type": "felt"
-            }
-        ],
+        "inputs": [],
         "name": "constructor",
         "outputs": [],
         "type": "constructor"

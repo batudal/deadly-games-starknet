@@ -68,10 +68,10 @@ end
 # --------------------------- #
 
 @constructor
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    admin_address : felt
-):
-    admin.write(admin_address)
+func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    alloc_locals
+    let (local caller) = get_caller_address()
+    admin.write(caller)
     return ()
 end
 
@@ -83,7 +83,9 @@ func only_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     alloc_locals
     let (local caller) = get_caller_address()
     let (current) = admin.read()
-    assert caller = current
+    with_attr error_message("Caller is not the admin."):
+        assert caller = current
+    end
     return ()
 end
 
