@@ -3,11 +3,7 @@
 from protostar.asserts import assert_eq, assert_not_eq
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
 from src.modules.games.greed.IGreed import IGreed
-from starkware.starknet.common.syscalls import (
-    get_caller_address,
-    get_contract_address,
-    get_block_timestamp,
-)
+from starkware.starknet.common.syscalls import get_caller_address, get_contract_address
 
 @external
 func test_greed_entry{syscall_ptr : felt*, range_check_ptr}():

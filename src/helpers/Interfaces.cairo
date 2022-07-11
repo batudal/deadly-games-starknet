@@ -24,6 +24,12 @@ end
 
 @contract_interface
 namespace IDeadlyGames:
+    func set_karma_address(karma_address : felt):
+    end
+    func transcendence_to_dao(dao_address : felt):
+    end
+    func get_admin_address() -> (admin : felt):
+    end
     func mint_karma(amount : Uint256, user : felt):
     end
 end
@@ -38,7 +44,12 @@ end
 namespace IKarma:
     func mint(to : felt, amount : Uint256):
     end
-
+    func name() -> (name : felt):
+    end
+    func owner() -> (owner : felt):
+    end
+    func symbol() -> (symbol : felt):
+    end
     func transferOwnership(newOwner : felt):
     end
 end

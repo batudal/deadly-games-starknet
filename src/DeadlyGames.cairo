@@ -47,7 +47,7 @@ func games(id : felt) -> (game : Game):
 end
 
 @storage_var
-func admin() -> (address : felt):
+func admin_address() -> (address : felt):
 end
 
 @storage_var
@@ -71,7 +71,7 @@ end
 func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
     alloc_locals
     let (local caller) = get_caller_address()
-    admin.write(caller)
+    admin_address.write(caller)
     return ()
 end
 
@@ -82,7 +82,7 @@ end
 func only_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
     alloc_locals
     let (local caller) = get_caller_address()
-    let (current) = admin.read()
+    let (current) = admin_address.read()
     with_attr error_message("Caller is not the admin."):
         assert caller = current
     end
@@ -94,6 +94,14 @@ end
 # --------------------------- #
 
 @external
+func set_karma_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    karma_address : felt
+):
+    karma_token.write(value=karma_address)
+    return ()
+end
+
+@external
 func mint_karma{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     amount : Uint256, user : felt
 ):
@@ -101,8 +109,9 @@ func mint_karma{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     # check module access
     let (local sender) = get_caller_address()
     let (access_state) = module_access.read(address=sender)
-    assert access_state = 1
-
+    with_attr error_message("Module with no access."):
+        assert access_state = 1
+    end
     # mint karma
     let (karma_address) = karma_token.read()
     IKarma.mint(contract_address=karma_address, to=user, amount=amount)
@@ -110,13 +119,11 @@ func mint_karma{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
 end
 
 @external
-func set_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    admin_address : felt
-):
+func set_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(new_admin : felt):
     only_admin()
     let (karma_address) = karma_token.read()
-    IKarma.transferOwnership(contract_address=karma_address, newOwner=admin_address)
-    admin.write(admin_address)
+    IKarma.transferOwnership(contract_address=karma_address, newOwner=new_admin)
+    admin_address.write(new_admin)
     return ()
 end
 
@@ -172,15 +179,17 @@ func emergency_shutdown{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     alloc_locals
     only_admin()
     let (local dao_state : felt) = dao_active.read()
-    assert dao_state = 1
-    let (admin_address) = admin.read()
+    with_attr error_message("Dao is not active."):
+        assert dao_state = 1
+    end
+    let (admin) = admin_address.read()
     let (game) = games.read(id)
-    IGame.emergency_shutdown(contract_address=game.implementation, to_address=admin_address)
+    IGame.emergency_shutdown(contract_address=game.implementation, to_address=admin)
     return ()
 end
 
 @external
-func transcendence{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+func transcendence_to_dao{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     dao_address : felt
 ):
     only_admin()
@@ -194,9 +203,63 @@ end
 # --------------------------- #
 
 @view
-func is_active{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt) -> (
-    active : felt
-):
+func is_game_active{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    id : felt
+) -> (active : felt):
     let (game) = games.read(id)
     return (active=game.active)
+end
+
+@view
+func get_admin_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    admin : felt
+):
+    alloc_locals
+    let (local admin) = admin_address.read()
+    return (admin)
+end
+
+@view
+func get_counter{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    count : felt
+):
+    alloc_locals
+    let (local count) = counter.read()
+    return (count)
+end
+
+@view
+func get_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt) -> (
+    game : Game
+):
+    alloc_locals
+    let (local game : Game) = games.read(id=id)
+    return (game)
+end
+
+@view
+func get_karma_token{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    address : felt
+):
+    alloc_locals
+    let (local address) = karma_token.read()
+    return (address)
+end
+
+@view
+func get_module_access{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    address : felt
+) -> (access : felt):
+    alloc_locals
+    let (local access) = module_access.read(address=address)
+    return (access)
+end
+
+@view
+func is_dao_active{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    state : felt
+):
+    alloc_locals
+    let (local state) = dao_active.read()
+    return (state)
 end

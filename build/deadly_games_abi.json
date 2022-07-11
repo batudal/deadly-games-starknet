@@ -40,7 +40,7 @@
     {
         "inputs": [
             {
-                "name": "admin_address",
+                "name": "new_admin",
                 "type": "felt"
             }
         ],
@@ -134,7 +134,7 @@
                 "type": "felt"
             }
         ],
-        "name": "transcendence",
+        "name": "transcendence_to_dao",
         "outputs": [],
         "type": "function"
     },
@@ -145,10 +145,22 @@
                 "type": "felt"
             }
         ],
-        "name": "is_active",
+        "name": "is_game_active",
         "outputs": [
             {
                 "name": "active",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_admin_address",
+        "outputs": [
+            {
+                "name": "admin",
                 "type": "felt"
             }
         ],

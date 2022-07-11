@@ -18,10 +18,9 @@ deadly_games = [
     "./src/DeadlyGames.cairo",
 ]
 
-[profile.ci.protostar.shared_command_configs]
+["protostar.shared_command_configs"]
 no_color=true
 cairo_path = ["./lib/cairo_contracts/src"]
-target = "contracts"
 
 [profile.devnet.protostar.deploy]
 gateway_url="http://127.0.0.1:5050/"
