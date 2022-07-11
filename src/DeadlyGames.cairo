@@ -132,7 +132,7 @@ func update_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     name : felt, id : felt, author : felt, implementation : felt
 ):
     only_admin()
-    let (game) = games.read(id)
+    let (game : Game) = games.read(id)
     game.name = name
     game.author = author
     game.implementation = implementation
@@ -149,7 +149,7 @@ func add_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     let (ctr) = counter.read()
     let id = ctr + 1
     games.write(id, game)
-    module_access.write(implementation, 1)
+    module_access.write(implementation, 0)
     counter.write(id)
     return ()
 end
@@ -158,8 +158,12 @@ end
 func activate_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt):
     alloc_locals
     only_admin()
-    let (local game : Game) = games.read(id)
-    game.active = 1
+    let (game : Game) = games.read(id)
+    let new_game = Game(
+        name=game.name, author=game.author, implementation=game.implementation, active=1
+    )
+    games.write(id=id, value=new_game)
+    module_access.write(game.implementation, 1)
     return ()
 end
 
@@ -167,8 +171,12 @@ end
 func disable_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt):
     alloc_locals
     only_admin()
-    let (local game : Game) = games.read(id)
-    game.active = 0
+    let (game : Game) = games.read(id)
+    let new_game = Game(
+        name=game.name, author=game.author, implementation=game.implementation, active=0
+    )
+    games.write(id=id, value=new_game)
+    module_access.write(game.implementation, 0)
     return ()
 end
 
@@ -201,14 +209,6 @@ end
 # --------------------------- #
 # view fxns
 # --------------------------- #
-
-@view
-func is_game_active{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    id : felt
-) -> (active : felt):
-    let (game) = games.read(id)
-    return (active=game.active)
-end
 
 @view
 func get_admin_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (

@@ -22,13 +22,30 @@ namespace IController:
     end
 end
 
+struct Game:
+    member name : felt
+    member author : felt
+    member implementation : felt
+    member active : felt
+end
+
 @contract_interface
 namespace IDeadlyGames:
     func set_karma_address(karma_address : felt):
     end
     func transcendence_to_dao(dao_address : felt):
     end
+    func add_game(name : felt, author : felt, implementation : felt):
+    end
+    func activate_game(id : felt):
+    end
+    func disable_game(id : felt):
+    end
+    func get_game(id : felt) -> (game : Game):
+    end
     func get_admin_address() -> (admin : felt):
+    end
+    func get_module_access(address : felt) -> (access : felt):
     end
     func mint_karma(amount : Uint256, user : felt):
     end
