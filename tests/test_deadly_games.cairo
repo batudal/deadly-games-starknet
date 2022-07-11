@@ -8,10 +8,14 @@ from src.helpers.Interfaces import IDeadlyGames, IKarma
 @external
 func __setup__{syscall_ptr : felt*, range_check_ptr}():
     alloc_locals
+    let KARMA_NAME = 0x4B61726D6120546F6B656E
+    let KARMA_SYMBOL = 0x4B41524D41
     let (local contract_address) = get_contract_address()
     %{
+        context.KARMA_NAME = ids.KARMA_NAME
+        context.KARMA_SYMBOL = ids.KARMA_SYMBOL
         context.deadly_games_address = deploy_contract("./src/DeadlyGames.cairo").contract_address 
-        context.karma_address = deploy_contract("src/modules/token/Karma.cairo",[42,42,18,ids.contract_address]).contract_address
+        context.karma_address = deploy_contract("src/modules/token/Karma.cairo",[ids.KARMA_NAME,ids.KARMA_SYMBOL,18,ids.contract_address]).contract_address
     %}
     check_karma_deployment()
     return ()
@@ -31,11 +35,17 @@ end
 func check_karma_deployment{syscall_ptr : felt*, range_check_ptr}():
     alloc_locals
     local karma_address : felt
-    %{ ids.karma_address = context.karma_address %}
+    tempvar KARMA_NAME
+    tempvar KARMA_SYMBOL
+    %{
+        ids.KARMA_NAME = context.KARMA_NAME
+        ids.KARMA_SYMBOL = context.KARMA_SYMBOL 
+        ids.karma_address = context.karma_address
+    %}
     let (local asset_name) = IKarma.name(contract_address=karma_address)
-    assert_eq(asset_name, 42)
+    assert_eq(asset_name, KARMA_NAME)
     let (local asset_symbol) = IKarma.symbol(contract_address=karma_address)
-    assert_eq(asset_symbol, 42)
+    assert_eq(asset_symbol, KARMA_SYMBOL)
     return ()
 end
 
