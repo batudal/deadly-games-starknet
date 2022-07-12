@@ -102,6 +102,15 @@ func set_karma_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
 end
 
 @external
+func set_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(new_admin : felt):
+    only_admin()
+    let (karma_address) = karma_token.read()
+    IKarma.transferOwnership(contract_address=karma_address, newOwner=new_admin)
+    admin_address.write(new_admin)
+    return ()
+end
+
+@external
 func mint_karma{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     amount : Uint256, user : felt
 ):
@@ -119,17 +128,8 @@ func mint_karma{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
 end
 
 @external
-func set_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(new_admin : felt):
-    only_admin()
-    let (karma_address) = karma_token.read()
-    IKarma.transferOwnership(contract_address=karma_address, newOwner=new_admin)
-    admin_address.write(new_admin)
-    return ()
-end
-
-@external
 func update_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    name : felt, id : felt, author : felt, implementation : felt
+    id : felt, name : felt, author : felt, implementation : felt
 ):
     only_admin()
     let (game : Game) = games.read(id)
@@ -256,7 +256,7 @@ func get_module_access{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
 end
 
 @view
-func is_dao_active{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+func get_dao_active{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
     state : felt
 ):
     alloc_locals

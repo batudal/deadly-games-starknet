@@ -2,6 +2,10 @@
     {
         "data": [
             {
+                "name": "user",
+                "type": "felt"
+            },
+            {
                 "name": "amount",
                 "type": "felt"
             }
@@ -77,17 +81,6 @@
             }
         ],
         "name": "set_addresses",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "pseudo_address",
-                "type": "felt"
-            }
-        ],
-        "name": "set_pseudo_address",
         "outputs": [],
         "type": "function"
     },

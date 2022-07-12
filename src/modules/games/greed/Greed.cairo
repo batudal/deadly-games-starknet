@@ -28,7 +28,7 @@ from starkware.cairo.common.uint256 import (
 )
 
 @event
-func greed_entry(amount : felt):
+func greed_entry(user : felt, amount : felt):
 end
 
 @event
@@ -123,36 +123,28 @@ func set_addresses{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
 end
 
 @external
-func set_pseudo_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    pseudo_address : felt
-):
-    pseudo_addr.write(pseudo_address)
-    return ()
-end
-
-@external
 func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ticket_amount : felt):
     alloc_locals
     # deposit
-    let (sender) = get_caller_address()
-    greed_entry.emit(ticket_amount)
-    let (recipient) = get_contract_address()
-    let (_token) = token_addr.read()
+    let (sender : felt) = get_caller_address()
+    greed_entry.emit(sender, ticket_amount)
+    let (recipient : felt) = get_contract_address()
+    let (token_address : felt) = token_addr.read()
     local ticket_price : Uint256 = Uint256(TICKET_PRICE, 0)
     local _ticket_amount : Uint256 = Uint256(low=ticket_amount, high=0)
     let (_amount_low, _amount_high) = uint256_mul(ticket_price, _ticket_amount)
-    # IERC20.transferFrom(
-    #     contract_address=_token, sender=sender, recipient=recipient, amount=_amount_low
-    # )
-    let (current_jackpot) = jackpot_amount.read()
+    IERC20.transferFrom(
+        contract_address=token_address, sender=sender, recipient=recipient, amount=_amount_low
+    )
+    let (current_jackpot : Uint256) = jackpot_amount.read()
     let (total_jackpot, carry) = uint256_add(current_jackpot, _amount_low)
     jackpot_amount.write(total_jackpot)
 
     # reward karma
     let (deadly_games_address) = deadly_games_addr.read()
-    # IDeadlyGames.mint_karma(
-    #     contract_address=deadly_games_address, amount=_ticket_amount, user=sender
-    # )
+    IDeadlyGames.mint_karma(
+        contract_address=deadly_games_address, amount=_ticket_amount, user=sender
+    )
     # rng
     let (rnd) = get_next_rnd()
     let (q, r) = unsigned_div_rem(rnd, 100)

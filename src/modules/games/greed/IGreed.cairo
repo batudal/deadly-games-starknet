@@ -4,7 +4,11 @@
 namespace IGreed:
     func greed(ticket_amount : felt):
     end
-
-    func set_pseudo_address(pseudo_address : felt):
+    func set_addresses(
+        token_address : felt,
+        deadly_games_address : felt,
+        karma_address : felt,
+        pseudo_address : felt,
+    ):
     end
 end

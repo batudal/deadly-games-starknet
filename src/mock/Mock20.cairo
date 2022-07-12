@@ -9,11 +9,11 @@ from openzeppelin.access.ownable import Ownable
 
 @constructor
 func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    name : felt, symbol : felt, decimals : felt, recipient : felt, owner : felt
+    name : felt, symbol : felt, decimals : felt, owner : felt
 ):
     ERC20.initializer(name, symbol, decimals)
     Ownable.initializer(owner)
-    mint(owner, Uint256(100,0))
+    mint(owner, Uint256(100, 0))
     return ()
 end
 
