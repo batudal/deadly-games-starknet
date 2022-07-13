@@ -78,6 +78,10 @@
             {
                 "name": "pseudo_address",
                 "type": "felt"
+            },
+            {
+                "name": "greed_mark_address",
+                "type": "felt"
             }
         ],
         "name": "set_addresses",

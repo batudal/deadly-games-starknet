@@ -32,11 +32,11 @@ func greed_entry(user : felt, amount : felt):
 end
 
 @event
-func greed_winner(user : felt, count : felt):
+func greed_winner(user : felt):
 end
 
 @event
-func greed_loser(user : felt, count : felt):
+func greed_loser(user : felt):
 end
 
 @event
@@ -113,12 +113,17 @@ end
 
 @external
 func set_addresses{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    token_address : felt, deadly_games_address : felt, karma_address : felt, pseudo_address : felt
+    token_address : felt,
+    deadly_games_address : felt,
+    karma_address : felt,
+    pseudo_address : felt,
+    greed_mark_address : felt,
 ):
     token_addr.write(token_address)
     deadly_games_addr.write(deadly_games_address)
     karma_addr.write(karma_address)
     pseudo_addr.write(pseudo_address)
+    greed_mark_addr.write(greed_mark_address)
     return ()
 end
 
@@ -162,13 +167,17 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
     # # register and mint
     if r != 0:
         let (local greed_mark_address) = greed_mark_addr.read()
-        # IGreedMark.mint_mark(
-        #     contract_address=greed_mark_address, to=recipient, amount=ticket_amount, type=0
-        # )
+        IGreedMark.mint_fcker(
+            contract_address=greed_mark_address, user=sender, amount=ticket_amount
+        )
+        greed_loser.emit(user=sender)
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
     else:
+        let (local greed_mark_address) = greed_mark_addr.read()
+        IGreedMark.mint_lcker(contract_address=greed_mark_address, user=sender)
+        greed_winner.emit(user=sender)
         # announce
         jackpots.write(_epoch, jackpot)
         win_counts.write(user=sender, value=_wincount + 1)
