@@ -89,44 +89,54 @@ func test_greed_entry{syscall_ptr : felt*, range_check_ptr}():
         ids.greed_address = context.greed_address
         ids.token_address = context.token_address
         ids.greed_mark_address = context.greed_mark_address
-        expect_events({"name": "greed_entry", "data": [ids.contract_address,1]})
     %}
     IERC20.approve(contract_address=token_address, spender=greed_address, amount=Uint256(2, 0))
     let (allowance : Uint256) = IERC20.allowance(
         contract_address=token_address, owner=contract_address, spender=greed_address
     )
     uint256_eq(allowance, Uint256(2, 0))
-    %{ expect_events({"name": "new_record_created", "data":[ids.contract_address]},{"name": "greed_loser", "data":[ids.contract_address]}) %}
+    %{ expect_events({"name": "greed_entry", "data": [ids.contract_address,1]},{"name": "new_record_created", "data":[ids.contract_address]},{"name": "greed_loser", "data":[ids.contract_address]}) %}
     IGreed.greed(contract_address=greed_address, ticket_amount=1)
     let (local user_record) = IGreedMark.get_user_record(
         contract_address=greed_mark_address, user=contract_address
     )
     assert_eq(user_record.fcker_count, 1)
+    assert_eq(user_record.lcker_count, 0)
     return ()
 end
 
-# @external
-# func test_greed_multiple_entry{syscall_ptr : felt*, range_check_ptr}():
-#     greed_multiple_entry(10)
-#     return ()
-# end
+@external
+func test_greed_multiple_entry{syscall_ptr : felt*, range_check_ptr}():
+    greed_multiple_entry(10)
+    return ()
+end
 
-# func greed_multiple_entry{syscall_ptr : felt*, range_check_ptr}(count : felt):
-#     alloc_locals
-#     let (local contract_address : felt) = get_contract_address()
-#     local greed_address : felt
-#     local token_address : felt
-#     %{
-#         ids.greed_address = context.greed_address
-#         ids.token_address = context.token_address
-#         expect_events({"name": "greed_entry", "data": [ids.contract_address,1]})
-#     %}
-#     IERC20.approve(contract_address=token_address, spender=greed_address, amount=Uint256(2, 0))
-#     let (allowance : Uint256) = IERC20.allowance(
-#         contract_address=token_address, owner=contract_address, spender=greed_address
-#     )
-#     uint256_eq(allowance, Uint256(2, 0))
-#     IGreed.greed(contract_address=greed_address, ticket_amount=1)
+func greed_multiple_entry{syscall_ptr : felt*, range_check_ptr}(count : felt):
+    alloc_locals
+    let (local contract_address : felt) = get_contract_address()
+    local greed_address : felt
+    local token_address : felt
+    local greed_mark_address : felt
 
-# return greed_multiple_entry(count - 1)
-# end
+    jmp body if count != 0
+    return ()
+
+    body:
+    %{
+        ids.greed_address = context.greed_address
+        ids.token_address = context.token_address
+        ids.greed_mark_address = context.greed_mark_address
+    %}
+    IERC20.approve(contract_address=token_address, spender=greed_address, amount=Uint256(2, 0))
+    let (allowance : Uint256) = IERC20.allowance(
+        contract_address=token_address, owner=contract_address, spender=greed_address
+    )
+    uint256_eq(allowance, Uint256(2, 0))
+    %{ expect_events({"name": "greed_entry", "data": [ids.contract_address,1]},{"name": "new_record_created", "data":[ids.contract_address]},{"name": "greed_loser", "data":[ids.contract_address]}) %}
+    IGreed.greed(contract_address=greed_address, ticket_amount=1)
+    let (local user_record) = IGreedMark.get_user_record(
+        contract_address=greed_mark_address, user=contract_address
+    )
+    assert_eq(user_record.fcker_count, 11 - count)
+    return greed_multiple_entry(count - 1)
+end
