@@ -1,4 +1,0 @@
---account takezo
-Contract address: 0x067182868cbd8ebc289dd54a25af35d3b3501d0a3fd29e3d981b9a8373aa1986
-Public key: 0x05d84c3ecf35d911c2e31f3b77346be3e783885a7503edfbc8d88ffeae4180b5
-Transaction hash: 0x466eac550debe3b1f596ed3bb17f7b9a69c0f38e607f1fdefbe4b2b2d08bc51
