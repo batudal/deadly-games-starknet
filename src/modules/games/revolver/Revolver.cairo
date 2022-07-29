@@ -39,7 +39,7 @@ func rounds(count : felt) -> (round : Round):
 end
 
 @storage_var
-func token_address() -> (address : felt)
+func token_address() -> (address : felt):
 end
 
 @storage_var
