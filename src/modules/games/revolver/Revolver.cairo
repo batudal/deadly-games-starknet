@@ -134,7 +134,7 @@ func send_recursive(counter : felt, winners : felt*, amount : Uint256):
     end
     let (player) = winners[counter]
     IERC20.transfer(contract_address=token_addr, recipient=player, amount=amount)
-    send_rewards(counter - 1, winners, amount)
+    send_recursive(counter - 1, winners, amount)
 end
 
 func create_new_round(round : felt):
