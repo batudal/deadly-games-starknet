@@ -19,7 +19,7 @@ from starkware.cairo.common.uint256 import Uint256
 #
 # Author: @takez0_o
 # Supported by: @matchboxDAO
-# Originated in: @decodedLabs
+# Originated in: @decodedlabs
 #
 # ------------------------------------------------- #
 
@@ -68,10 +68,8 @@ end
 # --------------------------- #
 
 @constructor
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
-    alloc_locals
-    let (local caller) = get_caller_address()
-    admin_address.write(caller)
+func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(admin : felt):
+    admin_address.write(admin)
     return ()
 end
 
@@ -144,7 +142,6 @@ func add_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     name : felt, author : felt, implementation : felt
 ):
     alloc_locals
-    only_admin()
     local game : Game = Game(name, author, implementation, 0)
     let (ctr) = counter.read()
     let id = ctr + 1
@@ -157,7 +154,6 @@ end
 @external
 func activate_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(id : felt):
     alloc_locals
-    only_admin()
     let (game : Game) = games.read(id)
     let new_game = Game(
         name=game.name, author=game.author, implementation=game.implementation, active=1

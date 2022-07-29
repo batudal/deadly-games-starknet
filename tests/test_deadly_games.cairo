@@ -15,7 +15,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
         context.contract_address = ids.contract_address
         context.KARMA_NAME = ids.KARMA_NAME
         context.KARMA_SYMBOL = ids.KARMA_SYMBOL
-        context.deadly_games_address = deploy_contract("./src/DeadlyGames.cairo").contract_address 
+        context.deadly_games_address = deploy_contract("./src/DeadlyGames.cairo",[ids.contract_address]).contract_address 
         context.karma_address = deploy_contract("src/modules/token/Karma.cairo",[ids.KARMA_NAME,ids.KARMA_SYMBOL,18,ids.contract_address]).contract_address
     %}
     check_karma_deployment()

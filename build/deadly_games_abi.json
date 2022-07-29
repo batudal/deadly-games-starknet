@@ -44,7 +44,12 @@
         "type": "struct"
     },
     {
-        "inputs": [],
+        "inputs": [
+            {
+                "name": "admin",
+                "type": "felt"
+            }
+        ],
         "name": "constructor",
         "outputs": [],
         "type": "constructor"

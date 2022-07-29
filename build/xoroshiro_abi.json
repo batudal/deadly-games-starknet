@@ -1,8 +1,27 @@
 [
     {
+        "data": [
+            {
+                "name": "previousOwner",
+                "type": "felt"
+            },
+            {
+                "name": "newOwner",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "OwnershipTransferred",
+        "type": "event"
+    },
+    {
         "inputs": [
             {
                 "name": "seed",
+                "type": "felt"
+            },
+            {
+                "name": "owner",
                 "type": "felt"
             }
         ],

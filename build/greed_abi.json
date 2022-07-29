@@ -1,5 +1,22 @@
 [
     {
+        "members": [
+            {
+                "name": "low",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "high",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Uint256",
+        "size": 2,
+        "type": "struct"
+    },
+    {
         "data": [
             {
                 "name": "user",
@@ -19,10 +36,6 @@
             {
                 "name": "user",
                 "type": "felt"
-            },
-            {
-                "name": "count",
-                "type": "felt"
             }
         ],
         "keys": [],
@@ -34,10 +47,6 @@
             {
                 "name": "user",
                 "type": "felt"
-            },
-            {
-                "name": "count",
-                "type": "felt"
             }
         ],
         "keys": [],
@@ -48,6 +57,17 @@
         "data": [],
         "keys": [],
         "name": "emergency_shutdown_executed",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "user",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "user_has_claimed",
         "type": "event"
     },
     {
@@ -100,17 +120,6 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "get_next_rnd",
-        "outputs": [
-            {
-                "name": "rnd",
-                "type": "felt"
-            }
-        ],
-        "type": "function"
-    },
-    {
         "inputs": [
             {
                 "name": "to_address",
@@ -123,6 +132,120 @@
         ],
         "name": "emergency_shutdown",
         "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "claim",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_token_address",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_deadly_games_address",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_karma_address",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_pseudo_address",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_greed_mark_address",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_jackpot_amount",
+        "outputs": [
+            {
+                "name": "amount",
+                "type": "Uint256"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_epoch",
+        "outputs": [
+            {
+                "name": "count",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_tickets_sold",
+        "outputs": [
+            {
+                "name": "count",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "get_ticket_price",
+        "outputs": [
+            {
+                "name": "amount",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     }
 ]

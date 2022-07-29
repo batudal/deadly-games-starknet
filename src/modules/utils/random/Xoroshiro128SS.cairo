@@ -4,6 +4,7 @@ from starkware.cairo.common.bitwise import bitwise_and, bitwise_or, bitwise_xor
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin, HashBuiltin
 from starkware.cairo.common.math import assert_le, split_felt, unsigned_div_rem
 from starkware.cairo.common.registers import get_label_location
+from openzeppelin.access.ownable import Ownable
 
 struct State:
     member s0 : felt
@@ -17,12 +18,12 @@ end
 @constructor
 func constructor{
     syscall_ptr : felt*, bitwise_ptr : BitwiseBuiltin*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}(seed : felt):
+}(seed : felt, owner : felt):
     alloc_locals
     let (s0) = splitmix64(seed)
     let (s1) = splitmix64(s0)
     let s = State(s0=s0, s1=s1)
-
+    Ownable.initializer(owner)
     state.write(s)
     return ()
 end

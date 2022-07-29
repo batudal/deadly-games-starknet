@@ -12,4 +12,6 @@ namespace IGreed:
         greed_mark_address : felt,
     ):
     end
+    func claim():
+    end
 end

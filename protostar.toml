@@ -1,5 +1,5 @@
 ["protostar.config"]
-protostar_version = "0.2.2"
+protostar_version = "0.2.6"
 
 ["protostar.project"]
 libs_path = "lib"
@@ -16,6 +16,12 @@ xoroshiro = [
 ]
 deadly_games = [
     "./src/DeadlyGames.cairo",
+]
+karma = [
+    "./src/modules/token/Karma.cairo",
+]
+greed_mark = [
+    "./src/modules/games/greed/GreedMark.cairo",
 ]
 
 ["protostar.shared_command_configs"]

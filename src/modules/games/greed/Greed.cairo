@@ -19,12 +19,14 @@ from starkware.starknet.common.syscalls import (
     get_contract_address,
     get_block_timestamp,
 )
-from src.openzeppelin.token.erc20.interfaces.IERC20 import IERC20
+from openzeppelin.token.erc20.interfaces.IERC20 import IERC20
 from starkware.cairo.common.uint256 import (
     Uint256,
     uint256_mul,
+    uint256_sub,
     uint256_unsigned_div_rem,
     uint256_add,
+    uint256_le,
 )
 
 @event
@@ -43,6 +45,10 @@ end
 func emergency_shutdown_executed():
 end
 
+@event
+func user_has_claimed(user : felt):
+end
+
 struct Jackpot:
     member winner : felt
     member winner_count : felt
@@ -56,15 +62,19 @@ func win_counts(user : felt) -> (count : felt):
 end
 
 @storage_var
+func user_claimed(user : felt) -> (amount : Uint256):
+end
+
+@storage_var
 func jackpots(epoch : felt) -> (jackpot : Jackpot):
 end
 
 @storage_var
-func epoch() -> (count : felt):
+func tickets_sold() -> (count : felt):
 end
 
 @storage_var
-func highest_jackpot() -> (count : felt):
+func epoch() -> (count : felt):
 end
 
 @storage_var
@@ -95,6 +105,10 @@ end
 func treasury_amount() -> (amount : Uint256):
 end
 
+@storage_var
+func initialized() -> (state : felt):
+end
+
 @constructor
 func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     deadly_games_address : felt
@@ -119,11 +133,14 @@ func set_addresses{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     pseudo_address : felt,
     greed_mark_address : felt,
 ):
+    let (state) = initialized.read()
+    assert (state) = 0
     token_addr.write(token_address)
     deadly_games_addr.write(deadly_games_address)
     karma_addr.write(karma_address)
     pseudo_addr.write(pseudo_address)
     greed_mark_addr.write(greed_mark_address)
+    initialized.write(1)
     return ()
 end
 
@@ -133,6 +150,8 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
     # deposit
     let (sender : felt) = get_caller_address()
     greed_entry.emit(sender, ticket_amount)
+    let (currently_sold : felt) = tickets_sold.read()
+    tickets_sold.write(currently_sold + ticket_amount)
     let (recipient : felt) = get_contract_address()
     let (token_address : felt) = token_addr.read()
     local ticket_price : Uint256 = Uint256(TICKET_PRICE, 0)
@@ -171,6 +190,7 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
             contract_address=greed_mark_address, user=sender, amount=ticket_amount
         )
         greed_loser.emit(user=sender)
+
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
@@ -196,13 +216,12 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
         let (local dev_share_low, dev_share_high) = uint256_mul(share, dev_percentage)
         let (local reserve_share_low, reserve_share_high) = uint256_mul(share, reserve_percentage)
         let (local current_treasury) = treasury_amount.read()
-        # IERC20.transfer(contract_address=_token, recipient=sender, amount=winner_share_low)
-        # IERC20.transfer(contract_address=_token, recipient=sender, amount=dev_share_low)
+        IERC20.transfer(contract_address=token_address, recipient=sender, amount=winner_share_low)
+        IERC20.transfer(contract_address=token_address, recipient=sender, amount=dev_share_low)
         jackpot_amount.write(reserve_share_low)
         let (local for_treasury, carry) = uint256_add(current_treasury, mason_share_low)
         treasury_amount.write(for_treasury)
 
-        # align ptrs
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
@@ -210,7 +229,6 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
     return ()
 end
 
-@external
 func get_next_rnd{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
     rnd : felt
 ):
@@ -233,4 +251,91 @@ func emergency_shutdown{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
         contract_address=_token, sender=sender, recipient=admin_address, amount=amount
     )
     return ()
+end
+
+@external
+func claim{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    alloc_locals
+    let (token_address : felt) = token_addr.read()
+    let (current_treasury : Uint256) = treasury_amount.read()
+    let (local caller) = get_caller_address()
+    let (user_win_count) = win_counts.read(caller)
+    let user_win_count_uint : Uint256 = Uint256(low=user_win_count, high=0)
+    let (total_win_count) = epoch.read()
+    let total_win_count_uint : Uint256 = Uint256(low=total_win_count, high=0)
+    let (local claimed : Uint256) = user_claimed.read(caller)
+    let (local product_low, product_high) = uint256_mul(current_treasury, user_win_count_uint)
+    let (local share, r) = uint256_unsigned_div_rem(product_low, total_win_count_uint)
+    let (local result) = uint256_sub(share, claimed)
+    let (local assertion) = uint256_le(Uint256(0, 0), result)
+    assert (assertion) = 1
+    IERC20.transfer(contract_address=token_address, recipient=caller, amount=share)
+    user_has_claimed.emit(caller)
+    return ()
+end
+
+@view
+func get_token_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    address : felt
+):
+    let (token_address : felt) = token_addr.read()
+    return (address=token_address)
+end
+
+@view
+func get_deadly_games_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    ) -> (address : felt):
+    let (deadly_games_address : felt) = deadly_games_addr.read()
+    return (address=deadly_games_address)
+end
+@view
+func get_karma_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    address : felt
+):
+    let (karma_address : felt) = karma_addr.read()
+    return (address=karma_address)
+end
+@view
+func get_pseudo_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    address : felt
+):
+    let (pseudo_address : felt) = pseudo_addr.read()
+    return (address=pseudo_address)
+end
+@view
+func get_greed_mark_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    ) -> (address : felt):
+    let (greed_mark_address : felt) = greed_mark_addr.read()
+    return (address=greed_mark_address)
+end
+
+@view
+func get_jackpot_amount{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    amount : Uint256
+):
+    let (current_jackpot_amount : Uint256) = jackpot_amount.read()
+    return (amount=current_jackpot_amount)
+end
+
+@view
+func get_epoch{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    count : felt
+):
+    let (current_epoch) = epoch.read()
+    return (count=current_epoch)
+end
+
+@view
+func get_tickets_sold{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    count : felt
+):
+    let (currently_sold : felt) = tickets_sold.read()
+    return (count=currently_sold)
+end
+
+@view
+func get_ticket_price{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    amount : felt
+):
+    return (TICKET_PRICE)
 end

@@ -38,8 +38,7 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     alloc_locals
     ERC721_initializer(name, symbol)
     Ownable.initializer(owner)
-    let (local caller) = get_caller_address()
-    greed_addr.write(caller)
+    greed_addr.write(owner)
     return ()
 end
 
@@ -218,13 +217,6 @@ func only_greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     let (local caller) = get_caller_address()
     let (current) = greed_addr.read()
     assert caller = current
-    return ()
-end
-
-@external
-func set_greed_addr{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(addr : felt):
-    only_greed()
-    greed_addr.write(addr)
     return ()
 end
 
