@@ -132,6 +132,7 @@ func send_recursive(counter : felt, winners : felt*, amount : Uint256):
     if counter == 0:
         return()
     end
+    let (token_addr) = token_address.read()
     let (player) = winners[counter]
     IERC20.transfer(contract_address=token_addr, recipient=player, amount=amount)
     send_recursive(counter - 1, winners, amount)
