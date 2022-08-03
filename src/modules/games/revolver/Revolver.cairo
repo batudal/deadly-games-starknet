@@ -19,6 +19,18 @@ from starkware.cairo.common.uint256 import (
     uint256_le,
 )
 
+@event
+func new_entry(user : felt, round : felt):
+end
+
+@event
+func shots_fired(loser : felt):
+end
+
+@event
+func emergency_shutdown_executed():
+end
+
 struct Round:
     member player_1 : felt
     member player_2 : felt
@@ -39,19 +51,19 @@ func rounds(count : felt) -> (round : Round):
 end
 
 @storage_var
-func token_address() -> (address : felt):
+func token_addr() -> (address : felt):
 end
 
 @storage_var
 func pseudo_addr() -> (address : felt):
 end
 
-@event
-func new_entry(user : felt, round : felt):
+@storage_var
+func deadly_games_addr() -> (address : felt):
 end
 
-@event
-func shots_fired(loser : felt):
+@storage_var
+func initialized() -> (state : felt):
 end
 
 @view
@@ -59,6 +71,21 @@ func latest_round() -> (round : Round):
     let (index : felt) = counter.read()
     let (last_round : Round) = rounds.read(count=index)
     return (last_round)
+end
+
+@external
+func set_addresses{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    token_address : felt,
+    deadly_games_address : felt,
+    pseudo_address : felt,
+):
+    let (state) = initialized.read()
+    assert (state) = 0
+    token_addr.write(token_address)
+    deadly_games_addr.write(deadly_games_address)
+    pseudo_addr.write(pseudo_address)
+    initialized.write(1)
+    return ()
 end
 
 func get_next_rnd{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
@@ -120,7 +147,6 @@ func fire() -> (loser : felt):
 end
 
 func distribute_rewards(round : felt, loser : felt):
-    let (token) = token_address.read()
     let (amount,_) = unsigned_div_rem(TICKET_PRICE, 5)
     let (token_amount : Uint256) = split_felt(amount)
     let (winners : felt*) = get_winners_array(round=round, loser=loser)
@@ -132,9 +158,9 @@ func send_recursive(counter : felt, winners : felt*, amount : Uint256):
     if counter == 0:
         return()
     end
-    let (token_addr) = token_address.read()
+    let (token_address) = token_addr.read()
     let (player) = winners[counter]
-    IERC20.transfer(contract_address=token_addr, recipient=player, amount=amount)
+    IERC20.transfer(contract_address=token_address, recipient=player, amount=amount)
     send_recursive(counter - 1, winners, amount)
 end
 

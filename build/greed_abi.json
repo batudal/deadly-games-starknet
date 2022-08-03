@@ -92,10 +92,6 @@
                 "type": "felt"
             },
             {
-                "name": "karma_address",
-                "type": "felt"
-            },
-            {
                 "name": "pseudo_address",
                 "type": "felt"
             },
@@ -155,18 +151,6 @@
     {
         "inputs": [],
         "name": "get_deadly_games_address",
-        "outputs": [
-            {
-                "name": "address",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "get_karma_address",
         "outputs": [
             {
                 "name": "address",

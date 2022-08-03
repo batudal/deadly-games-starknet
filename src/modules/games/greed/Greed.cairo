@@ -86,10 +86,6 @@ func token_addr() -> (address : felt):
 end
 
 @storage_var
-func karma_addr() -> (address : felt):
-end
-
-@storage_var
 func deadly_games_addr() -> (address : felt):
 end
 
@@ -129,7 +125,6 @@ end
 func set_addresses{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     token_address : felt,
     deadly_games_address : felt,
-    karma_address : felt,
     pseudo_address : felt,
     greed_mark_address : felt,
 ):
@@ -137,7 +132,6 @@ func set_addresses{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     assert (state) = 0
     token_addr.write(token_address)
     deadly_games_addr.write(deadly_games_address)
-    karma_addr.write(karma_address)
     pseudo_addr.write(pseudo_address)
     greed_mark_addr.write(greed_mark_address)
     initialized.write(1)
@@ -288,13 +282,7 @@ func get_deadly_games_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     let (deadly_games_address : felt) = deadly_games_addr.read()
     return (address=deadly_games_address)
 end
-@view
-func get_karma_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
-    address : felt
-):
-    let (karma_address : felt) = karma_addr.read()
-    return (address=karma_address)
-end
+
 @view
 func get_pseudo_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
     address : felt

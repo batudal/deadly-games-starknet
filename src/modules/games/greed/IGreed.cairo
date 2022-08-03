@@ -7,7 +7,6 @@ namespace IGreed:
     func set_addresses(
         token_address : felt,
         deadly_games_address : felt,
-        karma_address : felt,
         pseudo_address : felt,
         greed_mark_address : felt,
     ):

@@ -8,6 +8,7 @@ from src.helpers.Interfaces import IDeadlyGames, IKarma
 from starkware.starknet.common.syscalls import get_contract_address
 from src.openzeppelin.token.erc20.interfaces.IERC20 import IERC20
 from starkware.cairo.common.uint256 import Uint256, uint256_eq
+from src.modules.games.greed.Constants import TICKET_PRICE
 
 @external
 func __setup__{syscall_ptr : felt*, range_check_ptr}():
@@ -26,7 +27,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
     let (balance : Uint256) = IERC20.balanceOf(
         contract_address=token_address, account=contract_address
     )
-    uint256_eq(balance, Uint256(100, 0))
+    uint256_eq(balance, Uint256(TICKET_PRICE, 0))
     set_addresses()
     add_active_greed()
     return ()
@@ -51,7 +52,6 @@ func set_addresses{syscall_ptr : felt*, range_check_ptr}():
         contract_address=greed_address,
         token_address=token_address,
         deadly_games_address=deadly_games_address,
-        karma_address=karma_address,
         pseudo_address=pseudo_address,
         greed_mark_address=greed_mark_address,
     )
@@ -89,11 +89,11 @@ func test_greed_entry{syscall_ptr : felt*, range_check_ptr}():
         ids.token_address = context.token_address
         ids.greed_mark_address = context.greed_mark_address
     %}
-    IERC20.approve(contract_address=token_address, spender=greed_address, amount=Uint256(2, 0))
+    IERC20.approve(contract_address=token_address, spender=greed_address, amount=Uint256(TICKET_PRICE, 0))
     let (allowance : Uint256) = IERC20.allowance(
         contract_address=token_address, owner=contract_address, spender=greed_address
     )
-    uint256_eq(allowance, Uint256(2, 0))
+    uint256_eq(allowance, Uint256(TICKET_PRICE, 0))
     %{ expect_events({"name": "greed_entry", "data": [ids.contract_address,1]},{"name": "new_record_created", "data":[ids.contract_address]},{"name": "greed_loser", "data":[ids.contract_address]}) %}
     IGreed.greed(contract_address=greed_address, ticket_amount=1)
     let (local user_record) = IGreedMark.get_user_record(
@@ -107,7 +107,7 @@ end
 @external
 func test_greed_multiple_entry{syscall_ptr : felt*, range_check_ptr}():
     # greed_multiple_entry(10)
-    greed_multiple_entry_no_check(100)
+    greed_multiple_entry_no_condition_check(10)
     claim()
     return ()
 end
@@ -128,11 +128,11 @@ func greed_multiple_entry{syscall_ptr : felt*, range_check_ptr}(count : felt):
         ids.token_address = context.token_address
         ids.greed_mark_address = context.greed_mark_address
     %}
-    IERC20.approve(contract_address=token_address, spender=greed_address, amount=Uint256(2, 0))
+    IERC20.approve(contract_address=token_address, spender=greed_address, amount=Uint256(TICKET_PRICE, 0))
     let (allowance : Uint256) = IERC20.allowance(
         contract_address=token_address, owner=contract_address, spender=greed_address
     )
-    uint256_eq(allowance, Uint256(2, 0))
+    uint256_eq(allowance, Uint256(TICKET_PRICE, 0))
     %{ expect_events({"name": "greed_entry", "data": [ids.contract_address,1]},{"name": "new_record_created", "data":[ids.contract_address]},{"name": "greed_loser", "data":[ids.contract_address]}) %}
     IGreed.greed(contract_address=greed_address, ticket_amount=1)
     let (local user_record) = IGreedMark.get_user_record(
@@ -154,7 +154,7 @@ func claim{syscall_ptr : felt*, range_check_ptr}():
     return ()
 end
 
-func greed_multiple_entry_no_check{syscall_ptr : felt*, range_check_ptr}(count : felt):
+func greed_multiple_entry_no_condition_check{syscall_ptr : felt*, range_check_ptr}(count : felt):
     alloc_locals
     let (local contract_address : felt) = get_contract_address()
     local greed_address : felt
@@ -170,11 +170,11 @@ func greed_multiple_entry_no_check{syscall_ptr : felt*, range_check_ptr}(count :
         ids.token_address = context.token_address
         ids.greed_mark_address = context.greed_mark_address
     %}
-    IERC20.approve(contract_address=token_address, spender=greed_address, amount=Uint256(2, 0))
+    IERC20.approve(contract_address=token_address, spender=greed_address, amount=Uint256(TICKET_PRICE, 0))
     let (allowance : Uint256) = IERC20.allowance(
         contract_address=token_address, owner=contract_address, spender=greed_address
     )
-    uint256_eq(allowance, Uint256(2, 0))
+    uint256_eq(allowance, Uint256(TICKET_PRICE, 0))
     %{ expect_events({"name": "greed_entry", "data": [ids.contract_address,1]},{"name": "new_record_created", "data":[ids.contract_address]}) %}
     IGreed.greed(contract_address=greed_address, ticket_amount=1)
     let (local user_record) = IGreedMark.get_user_record(

@@ -13,7 +13,7 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
 ):
     ERC20.initializer(name, symbol, decimals)
     Ownable.initializer(owner)
-    mint(owner, Uint256(100000, 0))
+    mint(owner, Uint256(1000000000000000000, 0))
     return ()
 end
 
