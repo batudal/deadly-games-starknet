@@ -52,7 +52,6 @@ end
 struct Jackpot:
     member winner : felt
     member winner_count : felt
-    member epoch : felt
     member total_amount : Uint256
     member timestamp : felt
 end
@@ -166,16 +165,8 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
     # rng
     let (rnd) = get_next_rnd()
     let (q, r) = unsigned_div_rem(rnd, 100)
-    let (_epoch) = epoch.read()
     let (_wincount) = win_counts.read(sender)
     let (block_timestamp) = get_block_timestamp()
-    let jackpot : Jackpot = Jackpot(
-        winner=sender,
-        winner_count=_wincount,
-        epoch=_epoch,
-        total_amount=total_jackpot,
-        timestamp=block_timestamp,
-    )
 
     # # register and mint
     if r != 0:
@@ -192,8 +183,16 @@ func greed{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(ti
         let (local greed_mark_address) = greed_mark_addr.read()
         IGreedMark.mint_lcker(contract_address=greed_mark_address, user=sender)
         greed_winner.emit(user=sender)
-        # announce
+
+        let jackpot : Jackpot = Jackpot(
+            winner=sender,
+            winner_count=_wincount,
+            total_amount=total_jackpot,
+            timestamp=block_timestamp,
+        )
+        let (_epoch) = epoch.read()
         jackpots.write(_epoch, jackpot)
+        epoch.write(_epoch + 1)
         win_counts.write(user=sender, value=_wincount + 1)
 
         # convert
@@ -290,6 +289,7 @@ func get_pseudo_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     let (pseudo_address : felt) = pseudo_addr.read()
     return (address=pseudo_address)
 end
+
 @view
 func get_greed_mark_address{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     ) -> (address : felt):
@@ -326,4 +326,12 @@ func get_ticket_price{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
     amount : felt
 ):
     return (TICKET_PRICE)
+end
+
+@view
+func get_user_win_count{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    user : felt
+) -> (count : felt):
+    let (win_count) = win_counts.read(user)
+    return (count=win_count)
 end

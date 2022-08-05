@@ -13,4 +13,6 @@ namespace IGreed:
     end
     func claim():
     end
+    func get_user_win_count(user : felt) -> (count : felt):
+    end
 end

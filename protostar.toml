@@ -24,6 +24,10 @@ greed_mark = [
     "./src/modules/games/greed/GreedMark.cairo",
 ]
 
+mert = [
+    "./mert.cairo"
+]
+
 ["protostar.shared_command_configs"]
 no_color=true
 cairo_path = ["./lib/cairo_contracts/src"]
