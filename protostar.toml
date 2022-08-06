@@ -23,9 +23,8 @@ karma = [
 greed_mark = [
     "./src/modules/games/greed/GreedMark.cairo",
 ]
-
-mert = [
-    "./mert.cairo"
+revolver = [
+    "./src/modules/games/revolver/Revolver.cairo",
 ]
 
 ["protostar.shared_command_configs"]

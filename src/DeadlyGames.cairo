@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_not_zero
+from starkware.cairo.common.math import assert_not_zero, assert_not_equal
 from starkware.starknet.common.syscalls import get_caller_address
 from src.helpers.Interfaces import IGame, IKarma
 from starkware.cairo.common.uint256 import Uint256
@@ -145,10 +145,34 @@ func add_game{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
     local game : Game = Game(name, author, implementation, 0)
     let (ctr) = counter.read()
     let id = ctr + 1
+    is_name_unq(name=name, count=id)
+    is_implementation_unq(implementation=implementation, count=id)
     games.write(id, game)
     module_access.write(implementation, 0)
     counter.write(id)
     return ()
+end
+
+func is_name_unq{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    name : felt, count : felt
+):
+    if count == 0:
+        return ()
+    end
+    let (game : Game) = games.read(count)
+    assert_not_equal(game.name, name)
+    return is_name_unq(name=name, count=count - 1)
+end
+
+func is_implementation_unq{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    implementation : felt, count : felt
+):
+    if count == 0:
+        return ()
+    end
+    let (game : Game) = games.read(count)
+    assert_not_equal(game.implementation, implementation)
+    return is_implementation_unq(implementation=implementation, count=count - 1)
 end
 
 @external

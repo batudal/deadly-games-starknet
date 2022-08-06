@@ -2,7 +2,7 @@
 
 from protostar.asserts import assert_eq, assert_not_eq
 from starkware.cairo.common.cairo_builtins import HashBuiltin, BitwiseBuiltin
-from src.modules.games.greed.IGreed import IRevolver
+from src.modules.games.revolver.IRevolver import IRevolver
 from src.helpers.Interfaces import IDeadlyGames, IKarma
 from starkware.starknet.common.syscalls import get_contract_address
 from src.openzeppelin.token.erc20.interfaces.IERC20 import IERC20
@@ -27,11 +27,37 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
     )
     uint256_eq(balance, Uint256(100, 0))
     set_addresses()
-    add_active_revolver()
+    add_activate_revolver()
     return ()
 end
 
-func add_active_revolver{syscall_ptr : felt*, range_check_ptr}():
+func set_addresses{syscall_ptr : felt*, range_check_ptr}():
+    tempvar token_address : felt
+    tempvar deadly_games_address : felt
+    tempvar karma_address : felt
+    tempvar pseudo_address : felt
+    tempvar revolver_address : felt
+    %{
+        ids.revolver_address = context.greed_address
+        ids.token_address = context.token_address
+        ids.deadly_games_address = context.deadly_games_address
+        ids.karma_address = context.karma_address
+        ids.pseudo_address = context.xoroshiro_address
+    %}
+    IRevolver.set_addresses(
+        contract_address=revolver_address,
+        token_address=token_address,
+        deadly_games_address=deadly_games_address,
+        pseudo_address=pseudo_address,
+    )
+    IDeadlyGames.set_karma_address(
+        contract_address=deadly_games_address, karma_address=karma_address
+    )
+    IKarma.transferOwnership(contract_address=karma_address, newOwner=deadly_games_address)
+    return ()
+end
+
+func add_activate_revolver{syscall_ptr : felt*, range_check_ptr}():
     alloc_locals
     local revolver_address : felt
     local deadly_games_address : felt
@@ -56,13 +82,15 @@ func test_revolver_entry{syscall_ptr : felt*, range_check_ptr}():
         ids.revolver_address = context.revolver_address
         ids.token_address = context.token_address
     %}
-    IERC20.approve(contract_address=token_address, spender=revolver_address, amount=Uint256(TICKET_PRICE, 0))
+    IERC20.approve(
+        contract_address=token_address, spender=revolver_address, amount=Uint256(TICKET_PRICE, 0)
+    )
     let (allowance : Uint256) = IERC20.allowance(
         contract_address=token_address, owner=contract_address, spender=revolver_address
     )
     uint256_eq(allowance, Uint256(TICKET_PRICE, 0))
     # add event expectation here
-    IRevolver.enter(contract_address=revolver_address, ticket_amount=1)
+    IRevolver.enter(contract_address=revolver_address)
     # add assertions here
     return ()
 end

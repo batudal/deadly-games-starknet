@@ -1,14 +1,14 @@
 %lang starknet
 
+from starkware.cairo.common.alloc import alloc
 from src.helpers.Interfaces import IXoroshiro128
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import unsigned_div_rem, split_felt
+from starkware.cairo.common.math import unsigned_div_rem, split_felt, assert_not_equal
 from starkware.starknet.common.syscalls import (
     get_caller_address,
     get_contract_address,
     get_block_timestamp,
 )
-from starkware.cairo.common.math import unsigned_div_rem
 from openzeppelin.token.erc20.interfaces.IERC20 import IERC20
 from starkware.cairo.common.uint256 import (
     Uint256,
@@ -20,7 +20,7 @@ from starkware.cairo.common.uint256 import (
 )
 
 @event
-func new_entry(user : felt, round : felt):
+func new_entry(user : felt, round_index : felt):
 end
 
 @event
@@ -29,6 +29,10 @@ end
 
 @event
 func emergency_shutdown_executed():
+end
+
+@event
+func new_round(round : felt):
 end
 
 struct Round:
@@ -67,7 +71,9 @@ func initialized() -> (state : felt):
 end
 
 @view
-func latest_round() -> (round : Round):
+func latest_round{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    round : Round
+):
     let (index : felt) = counter.read()
     let (last_round : Round) = rounds.read(count=index)
     return (last_round)
@@ -75,9 +81,7 @@ end
 
 @external
 func set_addresses{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    token_address : felt,
-    deadly_games_address : felt,
-    pseudo_address : felt,
+    token_address : felt, deadly_games_address : felt, pseudo_address : felt
 ):
     let (state) = initialized.read()
     assert (state) = 0
@@ -97,7 +101,9 @@ func get_next_rnd{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
     return (rnd)
 end
 
-func register_player(counter : felt, round : Round, user_index : felt, caller : felt):
+func register_player{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    counter : felt, round : Round, user_index : felt, caller : felt
+):
     if user_index == 1:
         assert round.player_1 = caller
     end
@@ -116,47 +122,68 @@ func register_player(counter : felt, round : Round, user_index : felt, caller : 
     if user_index == 0:
         assert round.player_6 = caller
     end
-    rounds.write(count=counter, round=round)
-    return()
+    rounds.write(count=counter, value=round)
+    return ()
 end
 
 @external
-func enter(round : felt):
+func enter{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    alloc_locals
     let (caller : felt) = get_caller_address()
-    entrance_check(caller)
-    new_entry.emit(user=caller)
     let (current_count : felt) = counter.read()
     counter.write(current_count + 1)
-    let (round : felt, user_index : felt) = unsigned_div_rem(current_count, 6)
-    let (current_round : Round) = rounds.read(round)
-    register_player(counter=current_count, round=current_round, user_index=user_index, caller=caller)
+
+    let (local round_index : felt, local user_index : felt) = unsigned_div_rem(current_count, 6)
+    let (local current_round : Round) = rounds.read(round_index)
+    entrance_check(round=current_round, caller=caller)
+    register_player(
+        counter=current_count, round=current_round, user_index=user_index, caller=caller
+    )
+    new_entry.emit(user=caller, round_index=round_index)
+
+    if user_index == 5:
+        let (loser : felt) = fire()
+        distribute_rewards(round=current_round, loser=loser)
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
 
     if user_index == 0:
-        let (local loser : felt) = fire()
-        distribute_rewards(round=current_round, loser=loser)
-        create_new_round(round=current_round)
+        create_new_round(round_index=round_index, caller=caller)
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        entrance_check(round=current_round, caller=caller)
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
     end
     return ()
 end
 
-func fire() -> (loser : felt):
+func fire{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (loser : felt):
     let (rnd : felt) = get_next_rnd()
     let (q, r) = unsigned_div_rem(rnd, 6)
-    let (loser_index) = r + 1
-    return (loser_index)
+    return (r)
 end
 
-func distribute_rewards(round : felt, loser : felt):
-    let (amount,_) = unsigned_div_rem(TICKET_PRICE, 5)
+func distribute_rewards{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    round : Round, loser : felt
+):
+    let (amount, _) = unsigned_div_rem(TICKET_PRICE, 5)
     let (token_amount : Uint256) = split_felt(amount)
     let (winners : felt*) = get_winners_array(round=round, loser=loser)
     send_recursive(5, winners, token_amount)
     return ()
 end
 
-func send_recursive(counter : felt, winners : felt*, amount : Uint256):
+func send_recursive{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    counter : felt, winners : felt*, amount : Uint256
+):
     if counter == 0:
-        return()
+        return ()
     end
     let (token_address) = token_addr.read()
     let (player) = winners[counter]
@@ -164,15 +191,21 @@ func send_recursive(counter : felt, winners : felt*, amount : Uint256):
     send_recursive(counter - 1, winners, amount)
 end
 
-func create_new_round(round : felt):
-
+func create_new_round{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    round_index : felt, caller : felt
+):
+    let (new_round : Round) = Round(player_1=caller)
+    rounds.write(count=round_index + 1, round=new_round)
+    new_round.emit(round_index + 1)
     return ()
 end
 
-func get_winners_array(round : Round, loser : felt) -> (winners : felt*):
+func get_winners_array{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    round : Round, loser : felt
+) -> (winners : felt*):
     alloc_locals
-    let (local players : felt*)
     let (local index) = 0
+    let (local winners : felt*) = alloc()
     if round.player_1 != loser:
         assert winners[index] = round.player_1
         index = index + 1
@@ -197,9 +230,15 @@ func get_winners_array(round : Round, loser : felt) -> (winners : felt*):
         assert winners[index] = round.player_6
         index = index + 1
     end
-    return(winners)
+    return (winners)
 end
 
-func entrance_check(caller : felt):
-    
+func entrance_check{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    round : Round, caller : felt
+):
+    assert_not_equal(round.player1, caller)
+    assert_not_equal(round.player2, caller)
+    assert_not_equal(round.player3, caller)
+    assert_not_equal(round.player4, caller)
+    assert_not_equal(round.player5, caller)
 end

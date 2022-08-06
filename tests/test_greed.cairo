@@ -30,7 +30,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
     )
     uint256_eq(balance, Uint256(TICKET_PRICE, 0))
     set_addresses()
-    add_active_greed()
+    add_activate_greed()
     return ()
 end
 
@@ -63,7 +63,7 @@ func set_addresses{syscall_ptr : felt*, range_check_ptr}():
     return ()
 end
 
-func add_active_greed{syscall_ptr : felt*, range_check_ptr}():
+func add_activate_greed{syscall_ptr : felt*, range_check_ptr}():
     alloc_locals
     local greed_address : felt
     local deadly_games_address : felt
@@ -119,7 +119,7 @@ end
 
 @external
 func test_greed_multiple_entry{syscall_ptr : felt*, range_check_ptr}():
-    greed_multiple_entry(100)
+    greed_multiple_entry(10)  # set to 100 minimum while testing
     claim()
     return ()
 end
